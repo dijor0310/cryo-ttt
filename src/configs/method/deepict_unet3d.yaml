@@ -1,0 +1,30 @@
+model_name: deepict_unet3d
+
+train_batch_size: 10
+eval_batch_size: 10
+dataset: deepict_h5
+
+depth: 2
+initial_features: 4
+encoder_dropout: 0.0
+decoder_dropout: 0.1
+# BN: True
+BN: layer_norm
+elu: False
+# final_activation: False
+
+learning_rate: 0.008
+decay_milestones: [10, 20, 40, 60, 80, 100]
+decay_gamma: 0.8
+max_epochs: 150
+grad_clip_norm: null
+
+# img_folder: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms
+# label_folder: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels
+# # is_training: True
+# aug_prob_to_one: False
+# patch_size: 100
+# on_the_fly_loading: False
+train_data_root_dir: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/training/12-12-trimmed-256-b20/work/training_data
+val_data_root_dir: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/training/12-12-trimmed-256-b20/work/validation_data
+normalize_data: True

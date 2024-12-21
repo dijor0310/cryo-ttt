@@ -1,0 +1,27 @@
+# exp setting
+exp_name: 'segment-sanity-b10-ln' # name that will be used in wandb
+ckpt_path: null # checkpoint path, used for evaluation
+seed: 42 # random seed
+debug: False # debug mode, will use cpu only
+devices: [ 3 ] # gpu ids
+
+# data related
+load_num_workers: 63 # number of workers for loading data
+train_data_path: [ "/path/to/train" ] # list of paths to the training data
+val_data_path: [ "/path/to/val" ] # list of paths to the validation data
+cache_path: "./cache"
+max_data_num: [ null ] # maximum number of data for each training dataset, null means all data
+use_cache: False # use cache for data loading
+overwrite_cache: False # overwrite existing cache
+store_data_in_memory: False # store data in memory
+tomo_list: "./configs/tomo_list.csv"
+# To delete
+# batch_size: 1
+# num_workers: 32
+# learning_rate: 0.001
+
+log_every_n_steps: 1
+
+defaults:
+  - _self_
+  - method: deepict_unet3d

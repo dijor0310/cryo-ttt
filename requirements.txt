@@ -1,0 +1,9 @@
+wandb
+torch==2.0.1
+pytorch-lightning
+hydra-core
+monai
+torchmetrics
+mrcfile
+pandas
+imageio
