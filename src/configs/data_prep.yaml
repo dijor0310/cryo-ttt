@@ -1,0 +1,15 @@
+tomo_list:
+  # Example values, tomo is path to the raw tomogram, membrane is path to the membrane GT annotation
+  vpp/002/pixel-10:
+    tomo: ???
+    membrane: ???
+
+  vpp/005/pixel-10:
+    tomo: ???
+    membrane: ???
+
+# Output dataset path and configuration
+dataset_path: ???
+patch_size: 160
+overlap: 80
+normalize: True

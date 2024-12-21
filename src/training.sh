@@ -1,0 +1,9 @@
+#!/bin/bash
+
+OUT_FILE=$1
+
+# export OMP_SCHEDULE=STATIC
+# export OMP_PROC_BIND=CLOSE
+# export GOMP_CPU_AFFINITY="N-M"
+
+NCCL_P2P_DISABLE=1 OMP_NUM_THREADS=16 MKL_NUM_THREADS=16 nohup python training.py &> $OUT_FILE &

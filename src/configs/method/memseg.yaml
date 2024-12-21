@@ -1,0 +1,37 @@
+# Model type
+model_name: memseg
+
+# Dataset config
+train_batch_size: 8
+eval_batch_size: 12
+test_batch_size: 8
+dataset: memseg
+
+# Simple UNet
+depth: 4
+initial_features: 16 # (8)
+encoder_dropout: 0.0
+decoder_dropout: 0.1
+BN: instance_norm
+elu: False
+
+# nnUNet
+dynunet:
+  enable: True
+  kernel_size: [3, 3, 3, 3, 3, 3]
+  strides: [1, 2, 2, 2, 2, 2]
+  upsample_kernel_size: [1, 2, 2, 2, 2, 2]
+  filters: [32, 64, 128, 256, 512, 1024]
+  res_block: True
+
+
+# Optimizer config
+learning_rate: 0.003
+max_epochs: 1000
+gamma_decay: 1.0
+grad_clip_norm: null
+
+# Data related config
+root_dir: ???
+normalize_data: True
+patch_size: 160
