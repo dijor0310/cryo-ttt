@@ -6,7 +6,10 @@ from torch.utils.data import DataLoader
 from models import build_model
 from datasets import build_dataset
 from utils.utils import set_seed
-from pytorch_lightning.callbacks import ModelCheckpoint  # Import ModelCheckpoint
+from pytorch_lightning.callbacks import (
+    ModelCheckpoint,
+    LearningRateMonitor,
+)  # Import ModelCheckpoint
 import hydra
 from omegaconf import OmegaConf
 import uuid
@@ -39,8 +42,9 @@ def train(cfg):
         mode="min",  # 'min' for loss/error, 'max' for accuracy
         dirpath=f"./ttt_ckpt/{exp_name}",
     )
+    learning_rate_monitor = LearningRateMonitor(logging_interval="epoch")
 
-    call_backs.append(checkpoint_callback)
+    call_backs.extend([checkpoint_callback, learning_rate_monitor])
 
     train_loader = DataLoader(
         train_set,
@@ -91,5 +95,5 @@ def train(cfg):
     )
 
 
-if __name__ == "" "__main__":
+if __name__ == "__main__":
     train()

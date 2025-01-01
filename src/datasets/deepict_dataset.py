@@ -7,7 +7,7 @@ import numpy as np
 
 
 class DeepictPatchDataset(Dataset):
-    def __init__(self, config, is_validation):
+    def __init__(self, config, is_validation, is_test):
         """
         PyTorch Dataset for loading subtomograms and labels from HDF5 files.
 
@@ -18,8 +18,12 @@ class DeepictPatchDataset(Dataset):
         """
         if is_validation:
             self.root_dir = Path(config.val_data_root_dir)
+        elif is_test:
+            print(list(config.keys()))
+            self.root_dir = Path(config.test_data_root_dir)
         else:
             self.root_dir = Path(config.train_data_root_dir)
+
         self.transform = None
         self.normalize = config.normalize_data
 
@@ -78,19 +82,20 @@ class DeepictPatchDataset(Dataset):
         if self.transform:
             raw = self.transform(raw)
 
-        rotation_idx = np.random.choice(len(self.rotation_classes))
-        axis, angle = self.rotation_classes[rotation_idx]
+        # rotation_idx = np.random.choice(len(self.rotation_classes))
+        # axis, angle = self.rotation_classes[rotation_idx]
 
-        if axis is not None:
-            # Apply the rotation
-            rotated_raw = np.rot90(raw, k=angle // 90, axes=(axis, (axis + 1) % 3))
-        else:
-            rotated_raw = raw  # Identity rotation
+        # if axis is not None:
+        #     # Apply the rotation
+        #     rotated_raw = np.rot90(raw, k=angle // 90, axes=(axis, (axis + 1) % 3))
+        # else:
+        #     rotated_raw = raw  # Identity rotation
 
         # print(raw.shape, label.shape)
         return {
             "image": raw[np.newaxis, ...].astype(np.float32),
             "label": label[np.newaxis, ...].astype(np.int64),
-            "rotated_image": rotated_raw[np.newaxis, ...].copy().astype(np.float32),
-            "rotation": rotation_idx,
+            "id": hdf5_file.stem + raw_key,
+            # "rotated_image": rotated_raw[np.newaxis, ...].copy().astype(np.float32),
+            # "rotation": rotation_idx,
         }

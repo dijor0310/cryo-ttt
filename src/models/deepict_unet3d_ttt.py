@@ -2,12 +2,10 @@ import torch
 import torch.nn as nn
 import numpy as np
 import pytorch_lightning as L
-from monai.losses import DiceLoss, DiceFocalLoss
+from monai.losses import DiceLoss
 from monai.metrics import DiceMetric
 import torchmetrics
-from .losses import IgnoreLabelDiceCELoss
 from torch.nn.functional import sigmoid
-import wandb
 
 # import tensors.actions as actions
 
@@ -448,27 +446,17 @@ class UNet3D(nn.Module):
         self.out_conv = nn.Conv3d(initial_features, out_channels, 1)
         self.activation = final_activation
 
-        self.rotation_conv_block = nn.Sequential(
-            nn.Conv3d(16, 32, kernel_size=3, padding=1),
-            nn.ReLU(),
-            nn.Dropout(p=decoder_dropout),
-            nn.Conv3d(32, 32, kernel_size=3, padding=1),
-            nn.ReLU(),
-            nn.Dropout(p=decoder_dropout),
-            nn.MaxPool3d(2),
-        )
-        # self.rotation_fc_block = nn.Sequential(
-        #     nn.Linear(16, 10),
-        #     # nn.Sigmoid(),
-        # )
-
     # crop the `from_encoder` tensor and concatenate both
     def _crop_and_concat(self, from_decoder, from_encoder):
         cropped = crop_tensor(from_encoder, from_decoder.shape)
         return torch.cat((cropped, from_decoder), dim=1)
 
-    def forward(self, input_tensor):
-        x = input_tensor
+    def forward(self, input_tensor, y):
+
+        if y is None:
+            y = torch.full_like(input_tensor, 0.5)
+        # x = input_tensor
+        x = torch.cat([input_tensor, y], dim=1)
         # apply encoder path
         encoder_out = []
         for level in range(self.depth):
@@ -479,8 +467,6 @@ class UNet3D(nn.Module):
         # apply base
         x = self.base(x)
 
-        # rotation_emb = self.rotation_conv_block(x).mean(axis=(-3, -2, -1))
-        # print(x.shape, encoder_out[-1].shape)
         # apply decoder path
         encoder_out = encoder_out[::-1]
         for level in range(self.depth):
@@ -491,259 +477,16 @@ class UNet3D(nn.Module):
         x = self.out_conv(x)
         if self.activation is not None:
             x = self.activation(x)
-        # return x, rotation_emb
-        return x, None
-
-
-class UNet3D_Lightning_Rotation(L.LightningModule):
-    def __init__(self, config):
-        super().__init__()
-        self.config = config
-
-        self.model = UNet3D(
-            depth=config.depth,
-            initial_features=config.initial_features,
-            decoder_dropout=config.decoder_dropout,
-            encoder_dropout=config.encoder_dropout,
-            BN=config.BN,
-            elu=config.elu,
-            final_activation=None,
-        )
-
-        # self.criterion = DiceLoss()
-        self.criterion = IgnoreLabelDiceCELoss(
-            ignore_label=2, reduction="mean", lambda_dice=1, lambda_ce=1
-        )
-
-        self.rotation_classifier = nn.Sequential(
-            nn.Linear(64, 32),
-            nn.ReLU(),
-            nn.Linear(32, 10),
-        )
-
-        self.dice_score = DiceMetric()
-        self.dice_loss = DiceLoss()
-        self.rotation_cross_entropy = nn.CrossEntropyLoss()
-
-    def training_step(self, batch, batch_idx):
-        x, x_rot, y, rotation = (
-            batch["image"],
-            batch["rotated_image"],
-            batch["label"],
-            batch["rotation"],
-        )
-
-        y_hat, rotation_emb = self.model(x)
-        _, rotation_emb_rot = self.model(x_rot)
-        rotation_hat = self.rotation_classifier(
-            torch.cat((rotation_emb, rotation_emb_rot), axis=-1)
-        )
-
-        loss = self.criterion(y_hat, y) + self.rotation_cross_entropy(
-            rotation_hat, rotation
-        )
-        self.log(
-            "train/loss", loss, batch_size=x.shape[0], on_step=False, on_epoch=True
-        )
-
-        acc = ((sigmoid(y_hat) > 0.5).int() == y).sum() / torch.numel(y_hat)
-        self.log("train/accuracy", acc, on_step=False, on_epoch=True)
-        self.log(
-            "train/dice_loss",
-            self.dice_loss((sigmoid(y_hat) > 0.5).int(), y),
-            on_step=False,
-            on_epoch=True,
-        )
-        self.log(
-            "train/rotation_loss",
-            self.rotation_cross_entropy(rotation_hat, rotation),
-            on_step=False,
-            on_epoch=True,
-        )
-
-        return loss
-
-    def validation_step(self, batch, batch_idx):
-        x, x_rot, y, rotation = (
-            batch["image"],
-            batch["rotated_image"],
-            batch["label"],
-            batch["rotation"],
-        )
-
-        y_hat, rotation_emb = self.model(x)
-        _, rotation_emb_rot = self.model(x_rot)
-        rotation_hat = self.rotation_classifier(
-            torch.cat((rotation_emb, rotation_emb_rot), axis=-1)
-        )
-
-        loss = self.criterion(y_hat, y) + self.rotation_cross_entropy(
-            rotation_hat, rotation
-        )
-        self.log("val/loss", loss, batch_size=x.shape[0], on_step=False, on_epoch=True)
-
-        acc = ((sigmoid(y_hat) > 0.5).int() == y).sum() / torch.numel(y_hat)
-        self.log("val/accuracy", acc, on_step=False, on_epoch=True)
-        self.log(
-            "val/dice_loss",
-            self.dice_loss((sigmoid(y_hat) > 0.5).int(), y),
-            batch_size=x.shape[0],
-            on_step=False,
-            on_epoch=True,
-        )
-        self.log(
-            "val/rotation_loss",
-            self.rotation_cross_entropy(rotation_hat, rotation),
-            on_step=False,
-            on_epoch=True,
-        )
-
-    def test_step(self, batch, batch_idx):
-        x, y = batch["image"], batch["label"]
-
-        # TODO: calculate dice score on entire tomogram, not on subtomograms
-        y_hat, rotation_hat = self.model(x)
-        score = torchmetrics.functional.dice(y_hat, y)
-        self.log("test/dice", score, batch_size=x.shape[0])
-
-    def configure_optimizers(self):
-        # return super().configure_optimizers()
-        optimizer = torch.optim.Adam(
-            self.model.parameters(), lr=self.config.method.learning_rate
-        )
-        scheduler = torch.optim.lr_scheduler.MultiStepLR(
-            optimizer,
-            milestones=self.config.method.decay_milestones,
-            gamma=self.config.method.decay_gamma,
-        )
-        return [optimizer], [scheduler]
-
-
-class UNet3D_Lightning(L.LightningModule):
-    def __init__(self, config):
-        super().__init__()
-        self.config = config
-        self.learning_rate = self.config.method.learning_rate
-
-        self.model = UNet3D(
-            depth=config.depth,
-            initial_features=config.initial_features,
-            decoder_dropout=config.decoder_dropout,
-            encoder_dropout=config.encoder_dropout,
-            BN=config.BN,
-            elu=config.elu,
-            final_activation=None,
-        )
-
-        # self.criterion = DiceLoss(sigmoid=True)
-        self.criterion = DiceFocalLoss(sigmoid=True)
-        # self.criterion = IgnoreLabelDiceCELoss(
-        #     ignore_label=2, reduction="mean", lambda_dice=1, lambda_ce=1
-        # )
-
-        self.dice_score = DiceMetric()
-        self.dice_loss = DiceLoss(sigmoid=True)
-        self.rotation_cross_entropy = nn.CrossEntropyLoss()
-
-    def training_step(self, batch, batch_idx):
-        (
-            x,
-            y,
-        ) = (
-            batch["image"],
-            batch["label"],
-        )
-
-        y_hat, _ = self.model(x)
-        # _, rotation_emb_rot = self.model(x_rot)
-        # rotation_hat = self.rotation_classifier(
-        #     torch.cat((rotation_emb, rotation_emb_rot), axis=-1)
-        # )
-
-        loss = self.criterion(y_hat, y)
-        self.log(
-            "train/loss", loss, batch_size=x.shape[0], on_step=False, on_epoch=True
-        )
-
-        acc = ((sigmoid(y_hat) > 0.5).int() == y).sum() / torch.numel(y_hat)
-        self.log("train/accuracy", acc, on_step=False, on_epoch=True)
-        self.log(
-            "train/dice_loss",
-            self.dice_loss(y_hat, y),
-            on_step=False,
-            on_epoch=True,
-        )
-
-        return loss
-
-    def validation_step(self, batch, batch_idx):
-        x, y = (
-            batch["image"],
-            batch["label"],
-        )
-
-        y_hat, _ = self.model(x)
-
-        loss = self.criterion(y_hat, y)
-        self.log("val/loss", loss, batch_size=x.shape[0], on_step=False, on_epoch=True)
-
-        acc = ((sigmoid(y_hat) > 0.5).int() == y).sum() / torch.numel(y_hat)
-        self.log("val/accuracy", acc, on_step=False, on_epoch=True)
-        self.log(
-            "val/dice_loss",
-            self.dice_loss(y_hat, y),
-            batch_size=x.shape[0],
-            on_step=False,
-            on_epoch=True,
-        )
-
-    def test_step(self, batch, batch_idx):
-        x, y = batch["image"], batch["label"]
-        id = batch["id"]
-
-        # TODO: calculate dice score on entire tomogram, not on subtomograms
-        y_hat, _ = self.model(x)
-        score = torchmetrics.functional.dice(y_hat, y)
-        self.log("test/dice", score, batch_size=x.shape[0])
-        print(y.shape, y_hat.shape)
-        preds = torch.cat(
-            (y[0, 0].sum(dim=0).float() * 100, y_hat[0, 0].sum(dim=0)), dim=0
-        )
-        wandb.log({"test/pred": wandb.Image(preds, caption=id[0])})
-
-    def configure_optimizers(self):
-        # return super().configure_optimizers()
-        optimizer = torch.optim.Adam(
-            self.model.parameters(), lr=self.config.method.learning_rate
-        )
-        # optimizer = torch.optim.SGD(
-        #     self.model.parameters(),
-        #     self.config.method.learning_rate,
-        #     weight_decay=self.config.method.weight_decay,
-        #     momentum=0.99,
-        #     nesterov=True
-        # )
-
-        scheduler = torch.optim.lr_scheduler.MultiStepLR(
-            optimizer,
-            milestones=self.config.method.decay_milestones,
-            gamma=self.config.method.decay_gamma,
-        )
-
-        lr_scheduler = {
-            "scheduler": scheduler,
-            "name": "scheduler",
-        }
-        return [optimizer], [lr_scheduler]
+        return x
 
 
 class UNet3D_Lightning_ITTT(L.LightningModule):
     def __init__(self, config):
         super().__init__()
         self.config = config
-        self.learning_rate = self.config.method.learning_rate
 
         self.model = UNet3D(
+            in_channels=2,
             depth=config.depth,
             initial_features=config.initial_features,
             decoder_dropout=config.decoder_dropout,
@@ -763,47 +506,84 @@ class UNet3D_Lightning_ITTT(L.LightningModule):
         self.dice_loss = DiceLoss(sigmoid=True)
         self.rotation_cross_entropy = nn.CrossEntropyLoss()
 
+    # def js_div(p, q):
+    #     """Function that computes distance between two predictions"""
+    #     m = 0.5 * (p + q)
+    #     return 0.5 * (F.kl_div(torch.log(p), m, reduction='batchmean') +
+    #                 F.kl_div(torch.log(q), m, reduction='batchmean'))
+
     def training_step(self, batch, batch_idx):
         x, y = batch["image"], batch["label"]
         batch["id"]
+        batch_size = x.shape[0]
 
-        y_hat, _ = self.model(x)
+        mask = torch.rand(1) > 0.8
+        y_in = y if mask else None
 
-        loss = self.criterion(y_hat, y)
+        y_hat_0 = self.model(x, y=y_in)
+        # y_hat_1 = self.model(x, y=y_hat_0)
+
+        loss = self.criterion(y_hat_0, y)  # + self.criterion(y_hat_1, y)
         self.log(
-            "train/loss", loss, batch_size=x.shape[0], on_step=False, on_epoch=True
-        )
-
-        acc = ((sigmoid(y_hat) > 0.5).int() == y).sum() / torch.numel(y_hat)
-        self.log("train/accuracy", acc, on_step=False, on_epoch=True)
-        self.log(
-            "train/dice_loss",
-            self.dice_loss(y_hat, y),
+            "train/loss",
+            loss,
+            batch_size=batch_size,
             on_step=False,
             on_epoch=True,
+        )
+
+        acc = ((sigmoid(y_hat_0) > 0.5).int() == y).sum() / torch.numel(y_hat_0)
+        self.log(
+            "train/accuracy", acc, on_step=False, on_epoch=True, batch_size=batch_size
+        )
+        self.log(
+            "train/dice_loss",
+            self.dice_loss(y_hat_0, y),
+            on_step=False,
+            on_epoch=True,
+            batch_size=batch_size,
         )
 
         return loss
 
     def validation_step(self, batch, batch_idx):
-        x, y = (
-            batch["image"],
-            batch["label"],
+        x, y = batch["image"], batch["label"]
+        batch["id"]
+        batch_size = x.shape[0]
+
+        torch.rand(1) > 0.8
+        # y_in = y if mask else None
+
+        y_hat_0 = self.model(x, y=None)
+        y_hat_1 = self.model(x, y=y_hat_0)
+
+        loss = self.criterion(y_hat_0, y)
+        self.log("val/loss", loss, batch_size=batch_size, on_step=False, on_epoch=True)
+
+        acc = ((sigmoid(y_hat_0) > 0.5).int() == y).sum() / torch.numel(y_hat_0)
+        self.log(
+            "val/accuracy", acc, on_step=False, on_epoch=True, batch_size=batch_size
         )
-
-        y_hat, _ = self.model(x)
-
-        loss = self.criterion(y_hat, y)
-        self.log("val/loss", loss, batch_size=x.shape[0], on_step=False, on_epoch=True)
-
-        acc = ((sigmoid(y_hat) > 0.5).int() == y).sum() / torch.numel(y_hat)
-        self.log("val/accuracy", acc, on_step=False, on_epoch=True)
         self.log(
             "val/dice_loss",
-            self.dice_loss(y_hat, y),
-            batch_size=x.shape[0],
+            self.dice_loss(y_hat_0, y),
             on_step=False,
             on_epoch=True,
+            batch_size=batch_size,
+        )
+        self.log(
+            "val/dice_loss_1",
+            self.dice_loss(y_hat_1, y),
+            on_step=False,
+            on_epoch=True,
+            batch_size=batch_size,
+        )
+        self.log(
+            "val/dice_zigzag",
+            self.dice_loss(y_hat_0, y_hat_1),
+            on_step=False,
+            on_epoch=True,
+            batch_size=batch_size,
         )
 
     def test_step(self, batch, batch_idx):
@@ -819,22 +599,23 @@ class UNet3D_Lightning_ITTT(L.LightningModule):
         optimizer = torch.optim.Adam(
             self.model.parameters(), lr=self.config.method.learning_rate
         )
-        # optimizer = torch.optim.SGD(
-        #     self.model.parameters(),
-        #     self.config.method.learning_rate,
-        #     weight_decay=self.config.method.weight_decay,
-        #     momentum=0.99,
-        #     nesterov=True
+
+        # scheduler = torch.optim.lr_scheduler.MultiStepLR(
+        #     optimizer,
+        #     milestones=self.config.method.decay_milestones,
+        #     gamma=self.config.method.decay_gamma,
         # )
 
-        scheduler = torch.optim.lr_scheduler.MultiStepLR(
+        # lr_scheduler = {
+        #     "scheduler": scheduler,
+        #     "name": "scheduler",
+        # }
+        scheduler = torch.optim.lr_scheduler.CyclicLR(
             optimizer,
-            milestones=self.config.method.decay_milestones,
-            gamma=self.config.method.decay_gamma,
+            base_lr=self.config.method.base_lr,
+            max_lr=self.config.method.max_lr,
+            step_size_up=self.config.method.step_size,
+            step_size_down=self.config.method.step_size,
+            cycle_momentum=False,
         )
-
-        lr_scheduler = {
-            "scheduler": scheduler,
-            "name": "scheduler",
-        }
-        return [optimizer], [lr_scheduler]
+        return [optimizer], [scheduler]

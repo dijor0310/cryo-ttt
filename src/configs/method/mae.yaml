@@ -1,0 +1,27 @@
+model_name: mae
+
+# Architecture
+stage: 1 # 1 reconstruction pre-training, 2 - segmentation training
+in_channels: 1
+base_channels: 8
+depth: 3
+kernel_size: 3
+stride: 1
+padding: 1
+dropout: 0.1
+mask_ratio: 0.3
+
+# Optimization
+learning_rate: 0.0005
+decay_milestones: [10, 20, 40, 60, 80, 100]
+decay_gamma: 1.0
+max_epochs: 150
+grad_clip_norm: null
+
+# Dataset
+train_batch_size: 5
+eval_batch_size: 10
+dataset: deepict_h5
+train_data_root_dir: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/training/12-12-trimmed-256-b20/work/training_data
+val_data_root_dir: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/training/12-12-trimmed-256-b20/work/validation_data
+normalize_data: True

@@ -174,3 +174,4 @@ wandb
 outputs
 ttt_ckpt
 lightning_logs
+*.out
