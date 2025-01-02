@@ -29,5 +29,5 @@ grad_clip_norm: null
 # on_the_fly_loading: False
 train_data_root_dir: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/training/12-12-trimmed-256-b20/work/training_data
 val_data_root_dir: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/training/12-12-trimmed-256-b20/work/validation_data
-test_data_root_dir: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/training/12-12-trimmed-256-b20/work/testing_data/vpp_val
+test_data_root_dir: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/training/12-12-trimmed-256-b20/work/testing_data/vpp_test
 normalize_data: True

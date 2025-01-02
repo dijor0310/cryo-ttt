@@ -12,9 +12,9 @@ decoder_dropout: 0.1
 BN: batch_norm
 elu: False
 
-learning_rate: 0.001
-base_lr: 0.005
-max_lr: 0.005
+learning_rate: 0.003
+base_lr: 0.003
+max_lr: 0.003
 step_size: 40
 decay_milestones: []
 decay_gamma: 1.0
@@ -25,5 +25,5 @@ grad_clip_norm: null
 
 train_data_root_dir: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/training/12-12-trimmed-256-b20/work/training_data
 val_data_root_dir: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/training/12-12-trimmed-256-b20/work/validation_data
-test_data_root_dir: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/training/12-12-trimmed-256-b20/work/testing_data/vpp_val
+test_data_root_dir: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/training/12-12-trimmed-256-b20/work/testing_data/def
 normalize_data: True

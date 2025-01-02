@@ -1,10 +1,11 @@
 # exp setting
-exp_name: it^3-try # name that will be used in wandb
+exp_name: test-def # name that will be used in wandb
+ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/it^3-try-7855d/epoch=57-val/dice_loss=0.38.ckpt
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/segment-sanity-b10-bn-2c296/epoch=108-val/dice_loss=0.36.ckpt #/ checkpoint path, used for evaluation
-ckpt_path: null
+# ckpt_path: null
 seed: 42 # random seed
 debug: False # debug mode, will use cpu only
-devices: [ 1 ] # gpu ids
+devices: [ 2 ] # gpu ids
 
 # data related
 load_num_workers: 63 # number of workers for loading data

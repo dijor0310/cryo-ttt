@@ -6,6 +6,7 @@ from monai.losses import DiceLoss
 from monai.metrics import DiceMetric
 import torchmetrics
 from torch.nn.functional import sigmoid
+import wandb
 
 # import tensors.actions as actions
 
@@ -502,15 +503,9 @@ class UNet3D_Lightning_ITTT(L.LightningModule):
         #     ignore_label=2, reduction="mean", lambda_dice=1, lambda_ce=1
         # )
 
-        self.dice_score = DiceMetric()
+        self.dice_score = DiceMetric(reduction="none")
         self.dice_loss = DiceLoss(sigmoid=True)
         self.rotation_cross_entropy = nn.CrossEntropyLoss()
-
-    # def js_div(p, q):
-    #     """Function that computes distance between two predictions"""
-    #     m = 0.5 * (p + q)
-    #     return 0.5 * (F.kl_div(torch.log(p), m, reduction='batchmean') +
-    #                 F.kl_div(torch.log(q), m, reduction='batchmean'))
 
     def training_step(self, batch, batch_idx):
         x, y = batch["image"], batch["label"]
@@ -521,9 +516,9 @@ class UNet3D_Lightning_ITTT(L.LightningModule):
         y_in = y if mask else None
 
         y_hat_0 = self.model(x, y=y_in)
-        # y_hat_1 = self.model(x, y=y_hat_0)
+        y_hat_1 = self.model(x, y=y_hat_0)
 
-        loss = self.criterion(y_hat_0, y)  # + self.criterion(y_hat_1, y)
+        loss = self.criterion(y_hat_0, y) + self.criterion(y_hat_1, y)
         self.log(
             "train/loss",
             loss,
@@ -543,6 +538,13 @@ class UNet3D_Lightning_ITTT(L.LightningModule):
             on_epoch=True,
             batch_size=batch_size,
         )
+        self.log(
+            "train/dice_loss_1",
+            self.dice_loss(y_hat_1, y),
+            on_step=False,
+            on_epoch=True,
+            batch_size=batch_size,
+        )
 
         return loss
 
@@ -551,13 +553,10 @@ class UNet3D_Lightning_ITTT(L.LightningModule):
         batch["id"]
         batch_size = x.shape[0]
 
-        torch.rand(1) > 0.8
-        # y_in = y if mask else None
-
         y_hat_0 = self.model(x, y=None)
         y_hat_1 = self.model(x, y=y_hat_0)
 
-        loss = self.criterion(y_hat_0, y)
+        loss = self.criterion(y_hat_0, y) + self.criterion(y_hat_1, y)
         self.log("val/loss", loss, batch_size=batch_size, on_step=False, on_epoch=True)
 
         acc = ((sigmoid(y_hat_0) > 0.5).int() == y).sum() / torch.numel(y_hat_0)
@@ -580,7 +579,7 @@ class UNet3D_Lightning_ITTT(L.LightningModule):
         )
         self.log(
             "val/dice_zigzag",
-            self.dice_loss(y_hat_0, y_hat_1),
+            self.dice_loss(y_hat_0, (sigmoid(y_hat_1) > 0.5).int()),
             on_step=False,
             on_epoch=True,
             batch_size=batch_size,
@@ -588,11 +587,22 @@ class UNet3D_Lightning_ITTT(L.LightningModule):
 
     def test_step(self, batch, batch_idx):
         x, y = batch["image"], batch["label"]
+        id = batch["id"]
 
         # TODO: calculate dice score on entire tomogram, not on subtomograms
-        y_hat, _ = self.model(x)
-        score = torchmetrics.functional.dice(y_hat, y)
+        y_hat_0 = self.model(x, None)
+        y_hat_1 = self.model(x, y=y_hat_0)
+
+        score = torchmetrics.functional.dice(y_hat_0, y)
+        score_1 = torchmetrics.functional.dice(y_hat_1, y)
         self.log("test/dice", score, batch_size=x.shape[0])
+        self.log("test/dice_1", score_1, batch_size=x.shape[0])
+
+        self.log("test/dice_loss", self.dice_loss(y_hat_0, y))
+        preds = torch.cat(
+            (y[0, 0].sum(dim=0).float() * 100, y_hat_0[0, 0].sum(dim=0)), dim=0
+        )
+        wandb.log({"test/pred": wandb.Image(preds, caption=id[0])})
 
     def configure_optimizers(self):
         # return super().configure_optimizers()
@@ -606,10 +616,6 @@ class UNet3D_Lightning_ITTT(L.LightningModule):
         #     gamma=self.config.method.decay_gamma,
         # )
 
-        # lr_scheduler = {
-        #     "scheduler": scheduler,
-        #     "name": "scheduler",
-        # }
         scheduler = torch.optim.lr_scheduler.CyclicLR(
             optimizer,
             base_lr=self.config.method.base_lr,

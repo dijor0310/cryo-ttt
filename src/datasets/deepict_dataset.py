@@ -94,8 +94,8 @@ class DeepictPatchDataset(Dataset):
         # print(raw.shape, label.shape)
         return {
             "image": raw[np.newaxis, ...].astype(np.float32),
-            "label": label[np.newaxis, ...].astype(np.int64),
-            "id": hdf5_file.stem + raw_key,
+            "label": label[np.newaxis, ...].astype(np.int8),
+            "id": hdf5_file.parents[0].stem + "_" + raw_key,
             # "rotated_image": rotated_raw[np.newaxis, ...].copy().astype(np.float32),
             # "rotation": rotation_idx,
         }
