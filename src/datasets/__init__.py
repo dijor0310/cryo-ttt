@@ -1,9 +1,11 @@
 from .dataset import CryoETMemSegDataset
 from .deepict_dataset import DeepictPatchDataset
+from .denoiseg_dataset import DenoisegPatchDataset
 
 __all__ = {
     "deepict_h5": DeepictPatchDataset,
     "memseg": CryoETMemSegDataset,
+    "denoiseg": DenoisegPatchDataset,
 }
 
 

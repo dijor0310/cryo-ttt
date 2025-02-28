@@ -4,7 +4,6 @@ import numpy as np
 import pytorch_lightning as L
 from monai.losses import DiceLoss
 from monai.metrics import DiceMetric
-import torchmetrics
 from torch.nn.functional import sigmoid
 import wandb
 
@@ -29,43 +28,6 @@ def crop_tensor(input_array: np.array, shape_to_crop: tuple) -> np.array:
     # calculate the crop
     crop = tuple(slice(sd, sh - sd) for sd, sh in zip(shape_diff, input_shape))
     return input_array[crop]
-
-
-# def crop_window(input_array: np.array, shape_to_crop: tuple or list,
-#                 window_corner: tuple or list):
-#     """
-#     Function from A. Kreshuk to crop tensors of order 3, starting always
-#     from a given corner.
-#     :param input_array: the input np.array image
-#     :param shape_to_crop: a tuple (cz, cy, cx), where each entry corresponds
-#     to the size of the  cropped region along each axis.
-#     :param window_corner: point from where the window will be cropped.
-#     :return: np.array of size (cz, cy, cx)
-#     """
-#     input_shape = input_array.shape
-#     assert all(ish >= csh for ish, csh in zip(input_shape, shape_to_crop)), \
-#         "Input shape must be larger equal crop shape"
-#     # get the difference between the shapes
-#     crop = tuple(slice(wc, wc + csh)
-#                  for wc, csh in zip(window_corner, shape_to_crop))
-#     # print(crop)
-#     return input_array[crop]
-
-
-# def crop_window_around_point(input_array: np.array, crop_shape: tuple or list,
-#                              window_center: tuple or list) -> np.array:
-#     # The window center is not in tom_coordinates, it is (z, y, x)
-#     input_shape = input_array.shape
-#     assert all(ish - csh // 2 - center >= 0 for ish, csh, center in
-#                zip(input_shape, crop_shape, window_center)), \
-#         "Input shape must be larger or equal than crop shape"
-#     assert all(center - csh // 2 >= 0 for csh, center in
-#                zip(crop_shape, window_center)), \
-#         "Input shape around window center must be larger equal than crop shape"
-#     # get the difference between the shapes
-#     crop = tuple(slice(center - csh // 2, center + csh // 2)
-#                  for csh, center in zip(crop_shape, window_center))
-#     return input_array[crop]
 
 
 class UNet3D(nn.Module):
@@ -308,10 +270,10 @@ class UNet3D(nn.Module):
                 self.base = self._conv_block_encoder(
                     n_features_encode[-1], n_features_base
                 )
-            elif BN == "group_norm":
+            elif BN == "instance_norm":
                 self.encoder = nn.ModuleList(
                     [
-                        self._conv_block_GN_encoder(
+                        self._conv_block_IN_encoder(
                             n_features_encode[level],
                             n_features_encode[level + 1],
                             box_size // (2**level),
@@ -324,11 +286,10 @@ class UNet3D(nn.Module):
                 self.base = self._conv_block_encoder(
                     n_features_encode[-1], n_features_base
                 )
-
-            elif BN == "instance_norm":
+            elif BN == "group_norm":
                 self.encoder = nn.ModuleList(
                     [
-                        self._conv_block_IN_encoder(
+                        self._conv_block_GN_encoder(
                             n_features_encode[level],
                             n_features_encode[level + 1],
                             box_size // (2**level),
@@ -436,7 +397,7 @@ class UNet3D(nn.Module):
             elif BN == "group_norm":
                 self.decoder = nn.ModuleList(
                     [
-                        self._conv_block_GN_decoder(
+                        self._conv_block_IN_decoder(
                             n_features_decode[level],
                             n_features_decode[level + 1],
                             box_size // (2 ** (self.depth - level - 1)),
@@ -504,12 +465,8 @@ class UNet3D(nn.Module):
         cropped = crop_tensor(from_encoder, from_decoder.shape)
         return torch.cat((cropped, from_decoder), dim=1)
 
-    def forward(self, input_tensor, y):
-
-        if y is None:
-            y = torch.full_like(input_tensor, 0.5)
-        # x = input_tensor
-        x = torch.cat([input_tensor, y], dim=1)
+    def forward(self, input_tensor):
+        x = input_tensor
         # apply encoder path
         encoder_out = []
         for level in range(self.depth):
@@ -530,16 +487,16 @@ class UNet3D(nn.Module):
         x = self.out_conv(x)
         if self.activation is not None:
             x = self.activation(x)
-        return x
+        return x[:, 0].unsqueeze(1), x[:, 1].unsqueeze(1)
 
 
-class UNet3D_Lightning_ITTT(L.LightningModule):
+class Denoiseg(L.LightningModule):
     def __init__(self, config):
         super().__init__()
         self.config = config
 
         self.model = UNet3D(
-            in_channels=2,
+            out_channels=2,
             depth=config.depth,
             initial_features=config.initial_features,
             decoder_dropout=config.decoder_dropout,
@@ -551,131 +508,142 @@ class UNet3D_Lightning_ITTT(L.LightningModule):
 
         self.criterion = DiceLoss(sigmoid=True)
         # self.criterion = DiceFocalLoss(sigmoid=True)
-        # self.criterion = IgnoreLabelDiceCELoss(
-        #     ignore_label=2, reduction="mean", lambda_dice=1, lambda_ce=1
-        # )
+        self.reconstruction_loss = nn.MSELoss(reduction="none")
 
-        self.dice_score = DiceMetric(reduction="none")
         self.dice_loss = DiceLoss(sigmoid=True)
-        self.rotation_cross_entropy = nn.CrossEntropyLoss()
+        self.dice_score = DiceMetric()
+
+    def masked_rec_loss(self, pred, target, mask):
+        masked_loss = self.reconstruction_loss(pred, target) * mask
+
+        return masked_loss.sum() / mask.sum()
 
     def training_step(self, batch, batch_idx):
-        x, y = batch["image"], batch["label"]
-        batch["id"]
+        x, y_out = batch["image"], batch["label"]
+        x_out, mask = batch["unmasked_image"], batch["mask"]
         batch_size = x.shape[0]
 
-        mask = torch.rand(1) > 0.8
-        y_in = y if mask else None
+        y_hat, x_hat = self.model(x)
 
-        y_hat_0 = self.model(x, y=y_in)
-        # y_hat_1 = self.model(x, y=y_hat_0)
-
-        loss = self.criterion(y_hat_0, y)  # + self.criterion(y_hat_1, y)
+        denoising_loss = self.masked_rec_loss(x_hat, x_out, mask)
+        seg_loss = self.criterion(y_hat, y_out)
+        loss = seg_loss + denoising_loss
         self.log(
             "train/loss",
             loss,
-            batch_size=batch_size,
+            batch_size=x.shape[0],
             on_step=False,
             on_epoch=True,
+            sync_dist=True,
         )
 
-        acc = ((sigmoid(y_hat_0) > 0.5).int() == y).sum() / torch.numel(y_hat_0)
+        acc = ((sigmoid(y_hat) > 0.5).int() == y_out).sum() / torch.numel(y_hat)
         self.log(
-            "train/accuracy", acc, on_step=False, on_epoch=True, batch_size=batch_size
+            "train/accuracy",
+            acc,
+            on_step=False,
+            on_epoch=True,
+            batch_size=batch_size,
+            sync_dist=True,
         )
         self.log(
             "train/dice_loss",
-            self.dice_loss(y_hat_0, y),
+            seg_loss,
+            # self.dice_loss(y_hat, y_out),
             on_step=False,
             on_epoch=True,
             batch_size=batch_size,
+            sync_dist=True,
         )
-        # self.log(
-        #     "train/dice_loss_1",
-        #     self.dice_loss(y_hat_1, y),
-        #     on_step=False,
-        #     on_epoch=True,
-        #     batch_size=batch_size,
-        # )
+        self.log(
+            "train/mse_loss",
+            denoising_loss,
+            on_step=False,
+            on_epoch=True,
+            batch_size=batch_size,
+            sync_dist=True,
+        )
 
         return loss
 
     def validation_step(self, batch, batch_idx):
-        x, y = batch["image"], batch["label"]
-        batch["id"]
+        x, y_out = batch["image"], batch["label"]
+        x_out, mask = batch["unmasked_image"], batch["mask"]
         batch_size = x.shape[0]
 
-        y_hat_0 = self.model(x, y=None)
-        y_hat_1 = self.model(x, y=y_hat_0)
+        y_hat, x_hat = self.model(x)
 
-        loss = self.criterion(y_hat_0, y) + self.criterion(y_hat_1, y)
-        self.log("val/loss", loss, batch_size=batch_size, on_step=False, on_epoch=True)
-
-        acc = ((sigmoid(y_hat_0) > 0.5).int() == y).sum() / torch.numel(y_hat_0)
+        denoising_loss = self.masked_rec_loss(x_hat, x_out, mask)
+        seg_loss = self.criterion(y_hat, y_out)
+        loss = seg_loss + denoising_loss
         self.log(
-            "val/accuracy", acc, on_step=False, on_epoch=True, batch_size=batch_size
+            "val/loss",
+            loss,
+            batch_size=x.shape[0],
+            on_step=False,
+            on_epoch=True,
+            sync_dist=True,
+        )
+
+        acc = ((sigmoid(y_hat) > 0.5).int() == y_out).sum() / torch.numel(y_hat)
+        self.log(
+            "val/accuracy",
+            acc,
+            on_step=False,
+            on_epoch=True,
+            batch_size=batch_size,
+            sync_dist=True,
         )
         self.log(
             "val/dice_loss",
-            self.dice_loss(y_hat_0, y),
+            seg_loss,
+            # self.dice_loss(y_hat, y_out),
             on_step=False,
             on_epoch=True,
             batch_size=batch_size,
+            sync_dist=True,
         )
         self.log(
-            "val/dice_loss_1",
-            self.dice_loss(y_hat_1, y),
+            "val/mse_loss",
+            denoising_loss,
             on_step=False,
             on_epoch=True,
             batch_size=batch_size,
-        )
-        self.log(
-            "val/dice_zigzag",
-            self.dice_loss(y_hat_0, (sigmoid(y_hat_1) > 0.5).int()),
-            on_step=False,
-            on_epoch=True,
-            batch_size=batch_size,
+            sync_dist=True,
         )
 
     def test_step(self, batch, batch_idx):
-        x, y = batch["image"], batch["label"]
+        x, y = batch["unmasked_image"], batch["label"]
         id = batch["id"]
 
         # TODO: calculate dice score on entire tomogram, not on subtomograms
-        y_hat_0 = self.model(x, None)
-        y_hat_1 = self.model(x, y=y_hat_0)
-
-        score = torchmetrics.functional.dice(y_hat_0, y)
-        score_1 = torchmetrics.functional.dice(y_hat_1, y)
+        y_hat, x_denoised = self.model(x)
+        # score = torchmetrics.functional.dice(y_hat, y)
+        score = 1 - self.dice_loss(y_hat, y)
         self.log("test/dice", score, batch_size=x.shape[0])
-        self.log("test/dice_1", score_1, batch_size=x.shape[0])
 
-        self.log("test/dice_loss", self.dice_loss(y_hat_0, y))
         preds = torch.cat(
-            (y[0, 0].sum(dim=0).float() * 100, y_hat_0[0, 0].sum(dim=0)), dim=0
+            (y[0, 0].sum(dim=0).float() * 100, y_hat[0, 0].sum(dim=0)), dim=0
+        )
+        denoised = torch.cat(
+            (x[0, 0, 128].float(), x_denoised[0, 0, 128].float()), dim=0
         )
         wandb.log(
-            {"test/pred": wandb.Image(preds, caption=id[0] + "_" + str(score.item()))}
+            {"test/pred": wandb.Image(preds, caption=id[0] + " " + str(score.item()))}
         )
+        wandb.log({"test/denoised": wandb.Image(denoised, caption=id[0])})
+
+        # raise NotImplementedError
 
     def configure_optimizers(self):
-        # return super().configure_optimizers()
         optimizer = torch.optim.Adam(
             self.model.parameters(), lr=self.config.method.learning_rate
         )
 
-        # scheduler = torch.optim.lr_scheduler.MultiStepLR(
-        #     optimizer,
-        #     milestones=self.config.method.decay_milestones,
-        #     gamma=self.config.method.decay_gamma,
-        # )
-
-        scheduler = torch.optim.lr_scheduler.CyclicLR(
+        scheduler = torch.optim.lr_scheduler.MultiStepLR(
             optimizer,
-            base_lr=self.config.method.base_lr,
-            max_lr=self.config.method.max_lr,
-            step_size_up=self.config.method.step_size,
-            step_size_down=self.config.method.step_size,
-            cycle_momentum=False,
+            milestones=self.config.method.decay_milestones,
+            gamma=self.config.method.decay_gamma,
         )
+
         return [optimizer], [scheduler]

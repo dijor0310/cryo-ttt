@@ -25,6 +25,9 @@ def train(cfg):
     cfg = OmegaConf.merge(cfg, cfg.method)
 
     model = build_model(cfg)
+    # to delete
+    # from models.denoiseg import Denoiseg
+    # model = Denoiseg.load_from_checkpoint(cfg.ckpt_path, config=cfg)
 
     train_set = build_dataset(cfg)
     val_set = build_dataset(cfg, val=True)
@@ -50,7 +53,10 @@ def train(cfg):
         train_set,
         batch_size=train_batch_size,
         num_workers=cfg.load_num_workers,
+        # shuffle=cfg.shuffle,
         drop_last=False,
+        pin_memory=cfg.pin_memory,
+        persistent_workers=cfg.persistent_workers,
         # collate_fn=train_set.collate_fn,
     )
 
@@ -60,6 +66,8 @@ def train(cfg):
         num_workers=cfg.load_num_workers,
         shuffle=False,
         drop_last=False,
+        pin_memory=cfg.pin_memory,
+        persistent_workers=cfg.persistent_workers,
         # collate_fn=train_set.collate_fn,
     )
 
@@ -74,11 +82,13 @@ def train(cfg):
         gradient_clip_val=cfg.method.grad_clip_norm,
         accelerator="cpu" if cfg.debug else "gpu",
         profiler="simple",
-        # strategy="auto" if cfg.debug else "ddp",
-        strategy="auto",
+        strategy="auto" if cfg.debug else "ddp",
+        # strategy="auto",
+        # strategy=cfg.strategy,
         callbacks=call_backs,
         log_every_n_steps=cfg.log_every_n_steps,
     )
+    print(trainer.strategy)
 
     # automatically resume training
     # if cfg.ckpt_path is None and not cfg.debug:

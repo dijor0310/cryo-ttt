@@ -28,12 +28,15 @@ def evaluate(cfg):
 
     exp_name = f"{cfg.exp_name}-{str(uuid.uuid4())[:5]}"
 
+    print(f"Dataset length: {len(test_set)}")
     test_loader = DataLoader(
         test_set,
         batch_size=test_batch_size,
         num_workers=cfg.load_num_workers,
         shuffle=False,
         drop_last=False,
+        persistent_workers=cfg.persistent_workers,
+        pin_memory=cfg.pin_memory,
     )
 
     trainer = pl.Trainer(
@@ -50,6 +53,7 @@ def evaluate(cfg):
         # strategy="auto" if cfg.debug else "ddp",
         strategy="auto",
         log_every_n_steps=cfg.log_every_n_steps,
+        benchmark=cfg.benchmark,
     )
 
     trainer.test(

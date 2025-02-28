@@ -1,18 +1,33 @@
 # exp setting
-exp_name: test-def # name that will be used in wandb
-ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/it^3-try-7855d/epoch=57-val/dice_loss=0.38.ckpt
+# exp_name: def-def-041-norm # name that will be used in wandb
+exp_name: denoiseg-gn-vpp-norm_data
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-gn-def-norm_data-95656/epoch=380-val/dice_loss=0.49.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-gn-def-b6e1b/epoch=319-val/dice_loss=0.45.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-gn-a723d/epoch=163-val/dice_loss=0.40.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-gn-23a3f/epoch=300-val/dice_loss=0.44.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-gn-ac946/epoch=197-val/dice_loss=0.57.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-gn-8af3f/epoch=89-val/dice_loss=0.72.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/it^3-try-7855d/epoch=57-val/dice_loss=0.38.ckpt
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/segment-sanity-b10-bn-2c296/epoch=108-val/dice_loss=0.36.ckpt #/ checkpoint path, used for evaluation
-# ckpt_path: null
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/it^3-gn-b8-93dde/epoch=124-val/dice_loss=0.37.ckpt
+ckpt_path: null
 seed: 42 # random seed
 debug: False # debug mode, will use cpu only
 devices: [ 2 ] # gpu ids
 
 # data related
-load_num_workers: 63 # number of workers for loading data
+# strategy: auto # if ddp, then disable shuffle
+load_num_workers: 48 # number of workers for loading data
+# load_num_workers: 48
+pin_memory: False
+persistent_workers: True
+# benchmark: True
+# shuffle: True
 
 # (wandb) logging
 log_every_n_steps: 1
 
 defaults:
   - _self_
-  - method: deepict_unet3d_ittt
+  - method: denoiseg
+  # - method: deepict_unet3d_ittt
