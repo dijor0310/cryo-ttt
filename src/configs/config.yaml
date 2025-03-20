@@ -1,6 +1,10 @@
 # exp setting
-# exp_name: def-def-041-norm # name that will be used in wandb
-exp_name: denoiseg-gn-vpp-norm_data
+# exp_name: denoiseg-f2fd # name that will be used in wandb
+# exp_name: def-vpp-001-norm-shuffle
+# exp_name: def-vpp-009-norm-v2
+exp_name: denoiseg-GN-vpp-norm-p160
+wandb_project_name: cryo-ttt-v2
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-gn-vpp-norm_data-4919c/epoch=191-val/dice_loss=0.39.ckpt
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-gn-def-norm_data-95656/epoch=380-val/dice_loss=0.49.ckpt
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-gn-def-b6e1b/epoch=319-val/dice_loss=0.45.ckpt
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-gn-a723d/epoch=163-val/dice_loss=0.40.ckpt
@@ -10,24 +14,45 @@ exp_name: denoiseg-gn-vpp-norm_data
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/it^3-try-7855d/epoch=57-val/dice_loss=0.38.ckpt
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/segment-sanity-b10-bn-2c296/epoch=108-val/dice_loss=0.36.ckpt #/ checkpoint path, used for evaluation
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/it^3-gn-b8-93dde/epoch=124-val/dice_loss=0.37.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-gn-def-norm_data-shuffle-e4940/epoch=399-val/dice_loss=0.63.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-gn-def-norm_data-shuffle-67fe4/epoch=893-val/dice_loss=0.44.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-gn-def-denorm-b5342/epoch=882-val/dice_loss=0.44.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-gn-def-norm-p160-5544a/epoch=292-val/dice_loss=0.68.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-gn-def-norm-p160-93151/epoch=104-val/dice_loss=0.66.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-gn-def-norm-p160-9f7b1/epoch=280-val/dice_loss=0.64.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoseg-f2fd-gn-def-norm-p160-ExpLR-AdamW-bilinear-186c9/epoch=137-val/dice_loss=0.74.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoseg-gn-def-norm-p160-PolyLR-AdamW-bilinear-a0d63/epoch=158-val/dice_loss=0.73.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-f2fd-GN-def-norm-p160-dropout3d-0547c/epoch=52-val/dice_loss=0.74.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-f2fd-GN-def-norm-p160-dropout3d-0547c/epoch=58-val/dice_loss=0.73.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-f2fd-IN-def-norm-p160-71581/epoch=96-val/dice_loss=0.77.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-f2fd-GN-def-norm-p160-5435d/epoch=245-val/dice_loss=0.72.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-f2fd-GN-vpp-norm-p160-5cdc7/epoch=71-val/dice_loss=0.59.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-f2fd-GN-vpp-norm-p160-m5_10-5ef5f/epoch=197-val/dice_loss=0.65.ckpt
 ckpt_path: null
 seed: 42 # random seed
 debug: False # debug mode, will use cpu only
-devices: [ 2 ] # gpu ids
+devices: [ 2, 3 ] # gpu ids
 
 # data related
-# strategy: auto # if ddp, then disable shuffle
-load_num_workers: 48 # number of workers for loading data
-# load_num_workers: 48
+profiler: null
+strategy: ddp # if ddp, then disable shuffle
+shuffle: False
+train_load_num_workers: 8 # number of workers for loading data
+val_load_num_workers: 8
 pin_memory: False
-persistent_workers: True
-# benchmark: True
-# shuffle: True
+persistent_workers: False
+
+accumulate_grad_batches: 1
+gradient_clip_val: null
 
 # (wandb) logging
+check_val_every_n_epochs: 1
 log_every_n_steps: 1
+num_sanity_val_steps: 0
+enable_progress_bar: True
 
 defaults:
   - _self_
-  - method: denoiseg
+  # - method: denoiseg_f2fd
+  - method: denoiseg_v2
   # - method: deepict_unet3d_ittt

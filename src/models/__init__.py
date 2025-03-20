@@ -2,6 +2,7 @@ from .deepict_unet3d import UNet3D_Lightning, UNet3D_Lightning_Rotation
 from .deepict_unet3d_ttt import UNet3D_Lightning_ITTT
 from .denoiseg import Denoiseg
 from .mae import LightningMaskedAutoencoder
+from .f2fd.model import Denoising_3DUNet as Denoiseg_F2FD
 
 __all__ = {
     "deepict_unet3d": UNet3D_Lightning,
@@ -9,6 +10,7 @@ __all__ = {
     "deepict_unet3d_ittt": UNet3D_Lightning_ITTT,
     "mae": LightningMaskedAutoencoder,
     "denoiseg": Denoiseg,
+    "denoiseg_f2fd": Denoiseg_F2FD, 
 }
 
 

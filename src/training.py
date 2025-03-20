@@ -41,7 +41,7 @@ def train(cfg):
     checkpoint_callback = ModelCheckpoint(
         monitor="val/dice_loss",  # Replace with your validation metric
         filename="{epoch}-{val/dice_loss:.2f}",
-        save_top_k=1,
+        save_top_k=5,
         mode="min",  # 'min' for loss/error, 'max' for accuracy
         dirpath=f"./ttt_ckpt/{exp_name}",
     )
@@ -52,8 +52,8 @@ def train(cfg):
     train_loader = DataLoader(
         train_set,
         batch_size=train_batch_size,
-        num_workers=cfg.load_num_workers,
-        # shuffle=cfg.shuffle,
+        num_workers=cfg.train_load_num_workers,
+        shuffle=cfg.shuffle,
         drop_last=False,
         pin_memory=cfg.pin_memory,
         persistent_workers=cfg.persistent_workers,
@@ -63,7 +63,7 @@ def train(cfg):
     val_loader = DataLoader(
         val_set,
         batch_size=eval_batch_size,
-        num_workers=cfg.load_num_workers,
+        num_workers=cfg.val_load_num_workers,
         shuffle=False,
         drop_last=False,
         pin_memory=cfg.pin_memory,
@@ -76,17 +76,21 @@ def train(cfg):
         logger=(
             None
             if cfg.debug
-            else WandbLogger(project="cryo-ttt", name=exp_name, id=exp_name)
+            else WandbLogger(project=cfg.wandb_project_name, name=exp_name, id=exp_name)
         ),
         devices=1 if cfg.debug else cfg.devices,
-        gradient_clip_val=cfg.method.grad_clip_norm,
+        gradient_clip_val=cfg.gradient_clip_val,
+        accumulate_grad_batches=cfg.accumulate_grad_batches,
         accelerator="cpu" if cfg.debug else "gpu",
-        profiler="simple",
-        strategy="auto" if cfg.debug else "ddp",
+        profiler=cfg.profiler,
+        # strategy="auto" if cfg.debug else "ddp",
         # strategy="auto",
-        # strategy=cfg.strategy,
+        strategy=cfg.strategy,
         callbacks=call_backs,
+        check_val_every_n_epoch=cfg.check_val_every_n_epochs,
         log_every_n_steps=cfg.log_every_n_steps,
+        num_sanity_val_steps=cfg.num_sanity_val_steps,
+        enable_progress_bar=cfg.enable_progress_bar,
     )
     print(trainer.strategy)
 

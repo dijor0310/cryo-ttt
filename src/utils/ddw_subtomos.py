@@ -92,6 +92,10 @@ def reassemble_subtomos(
             start_idx[1] : end_idx[1],
             start_idx[2] : end_idx[2],
         ] += subtomo_weights
+
+    # Check if there are no missing subtomos:
+    check_vol = count_vol[: crop_to_size[0], : crop_to_size[1], : crop_to_size[2]]
+    assert check_vol.count_nonzero() == check_vol.numel(), "Missing subtomos!"
     # avoid division by zero by replacing zero counts with ones
     # count_vol[count_vol == 0] = 1
     # average the overlapping regions by dividing the accumulated values by their count

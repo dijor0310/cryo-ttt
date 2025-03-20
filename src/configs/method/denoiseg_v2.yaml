@@ -1,0 +1,51 @@
+model_name: denoiseg
+
+train_batch_size: 32
+eval_batch_size: 32
+test_batch_size: 1
+dataset: denoiseg_v2
+mask_ratio: 0.1
+window_size: 5
+
+depth: 2
+initial_features: 4
+encoder_dropout: 0.0
+decoder_dropout: 0.1
+BN: group_norm
+elu: False
+
+lambda_ce: 0.2
+
+learning_rate: 0.003
+# decay_milestones: [110, 300]
+# decay_gamma: 0.7
+# base_lr: 0.0003
+# max_lr: 0.003
+# step_size_up: 5
+
+# expLR
+gamma_decay: 0.99
+max_epochs: 600
+
+train_data_root_dir: /media/ssd3/diyor/patch-160-overlap-80
+train_tomo_names:
+  # - def/026
+  # - def/030
+  # - def/034
+  - vpp/001
+  - vpp/002
+  - vpp/004
+
+val_data_root_dir: /media/ssd3/diyor/patch-160-overlap-80
+val_tomo_names:
+  - def/034
+  # - vpp/003
+val_gt: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/labels/TS_034_membranes_trimmed.mrc
+# val_gt: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels/TS_0003_membranes_trimmed.mrc
+
+test_data_root_dir: /media/ssd3/diyor/patch-160-overlap-80
+test_tomo_names:
+  - def/041
+
+test_entire_gt: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/labels/TS_041_membranes_trimmed.mrc
+test_membrain_pred: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/membrain_out_no_aug/TS_041_trimmed_MemBrain_seg_v10_alpha.ckpt_segmented.mrc

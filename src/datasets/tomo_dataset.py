@@ -7,12 +7,16 @@ import pandas as pd
 class TomoDataset(Dataset):
     def __init__(self, config):
         self.config = config
-        tomo_list = pd.read_csv(self.config.tomo_list)
-        self.tomo_paths = tomo_list["tomo_path"].to_list()
-        self.gt_paths = tomo_list["gt_path"].to_list()
-        print(tomo_list.head())
+        tomo_list = self.config.tomo_list
+        self.tomo_paths = []
+        self.gt_paths = []
+        self.tomo_names = []
 
-        # self.transform =
+        for tomo_name, paths in tomo_list.items():
+            self.tomo_paths.append(paths["tomo"])
+            self.gt_paths.append(paths["membrane"])
+            self.tomo_names.append(tomo_name)
+
 
     def __len__(self):
         return len(self.tomo_paths)
@@ -23,9 +27,10 @@ class TomoDataset(Dataset):
 
         tomogram = mrcfile.read(self.tomo_paths[idx])
         segmentation_gt = mrcfile.read(self.gt_paths[idx])
+        tomo_name = self.tomo_names[idx]
 
-        if self.transform:
-            tomogram = self.transform(tomogram)
-            segmentation_gt = self.transform(segmentation_gt)
+        # if self.transform:
+        #     tomogram = self.transform(tomogram)
+        #     segmentation_gt = self.transform(segmentation_gt)
 
-        return tomogram, segmentation_gt
+        return tomogram, segmentation_gt, tomo_name
