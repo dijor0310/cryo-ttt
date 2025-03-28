@@ -21,6 +21,11 @@ def crop_to_shape(tensor, shape):
     return tensor[:shape[0], :shape[1], :shape[2]]
 
 
+def normalize(tomo):
+
+    return (tomo - tomo.mean()) / tomo.std()
+
+
 @hydra.main(version_base=None, config_path="configs", config_name="data_prep")
 def data_prep(cfg):
     OmegaConf.set_struct(cfg, False)  # Open the struct
@@ -43,6 +48,10 @@ def data_prep(cfg):
 
         tomo = crop_to_shape(tomo, gt.shape)
 
+
+        if cfg.normalize:
+            tomo = normalize(tomo)
+            
         print(tomo.shape, gt.shape, gt.dtype)
         subtomos, subtomos_start_coord = extract_subtomos(
             tomo=tomo.to(torch.float32),

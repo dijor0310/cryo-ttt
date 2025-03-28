@@ -101,6 +101,8 @@ class IgnoreLabelDiceCELoss(_Loss):
         )
         # Compute Dice loss separately for each batch element
         dice_loss = torch.zeros_like(bce_loss)
+
+        # TODO (Diyor): I believe this can be unrolled ??
         for batch_idx in range(data.shape[0]):
             dice_loss[batch_idx] = self.dice_loss(
                 data[batch_idx].unsqueeze(0),
@@ -112,16 +114,20 @@ class IgnoreLabelDiceCELoss(_Loss):
         combined_loss = self.lambda_dice * dice_loss + self.lambda_ce * bce_loss
         if self.reduction == "mean":
             combined_loss = combined_loss.mean()
+            bce_loss = bce_loss.mean()
+            dice_loss = dice_loss.mean()
         elif self.reduction == "sum":
             combined_loss = combined_loss.sum()
+            bce_loss = bce_loss.sum()
+            dice_loss = dice_loss.mean()
         elif self.reduction == "none":
-            return combined_loss
+            return combined_loss, bce_loss, dice_loss
         else:
             raise ValueError(
                 f"Invalid reduction type {self.reduction}. "
                 "Valid options are 'mean' and 'sum'."
             )
-        return combined_loss
+        return combined_loss, bce_loss, dice_loss
 
 
 class self2selfLoss_noMask(torch.nn.Module):

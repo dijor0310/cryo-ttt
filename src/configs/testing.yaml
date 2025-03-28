@@ -1,0 +1,34 @@
+# exp setting
+exp_name: memseg-v0
+wandb_project_name: cryo-ttt-ttt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/memseg-v0-09606/epoch=184-val/dice_loss=0.37.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/memseg-v0-f321b/epoch=85-val/dice_loss=0.23.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/memseg-v0-97b27/epoch=182-val/dice_loss=0.75.ckpt
+ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/memseg-v0-97b27/epoch=111-val/dice_loss=0.76.ckpt
+seed: 42 # random seed
+debug: False # debug mode, will use cpu only
+devices: [ 2 ] # gpu ids
+
+# data related
+profiler: null
+strategy: ddp # if ddp, then disable shuffle
+shuffle: False
+test_load_num_workers: 32 # number of workers for loading data (8)
+pin_memory: False
+persistent_workers: False
+
+accumulate_grad_batches: 1
+gradient_clip_val: null
+
+# (wandb) logging
+check_val_every_n_epochs: 1
+log_every_n_steps: 1
+num_sanity_val_steps: 0
+enable_progress_bar: True
+
+defaults:
+  - _self_
+  - method: memseg
+  # - method: denoiseg_f2fd
+  # - method: denoiseg_v2
+  # - method: deepict_unet3d_ittt

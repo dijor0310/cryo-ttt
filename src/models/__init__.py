@@ -3,6 +3,7 @@ from .deepict_unet3d_ttt import UNet3D_Lightning_ITTT
 from .denoiseg import Denoiseg
 from .mae import LightningMaskedAutoencoder
 from .f2fd.model import Denoising_3DUNet as Denoiseg_F2FD
+from .memseg import MemSeg
 
 __all__ = {
     "deepict_unet3d": UNet3D_Lightning,
@@ -11,6 +12,7 @@ __all__ = {
     "mae": LightningMaskedAutoencoder,
     "denoiseg": Denoiseg,
     "denoiseg_f2fd": Denoiseg_F2FD, 
+    "memseg": MemSeg,
 }
 
 

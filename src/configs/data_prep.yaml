@@ -1,55 +1,71 @@
 tomo_list:
-  def/026: 
-    tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/tomograms_normalized/TS_026_trimmed.rec
-    membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/labels/TS_026_membranes_trimmed.mrc
-  def/030: 
-    tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/tomograms_normalized/TS_030_trimmed.rec
-    membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/labels/TS_030_membranes_trimmed.mrc
-  def/034: 
-    tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/tomograms_normalized/TS_034_trimmed.rec
-    membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/labels/TS_034_membranes_trimmed.mrc
+  # def/026: 
+  #   tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/tomograms_normalized/TS_026_trimmed.rec
+  #   membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/labels/TS_026_membranes_trimmed.mrc
+  # def/030: 
+  #   tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/tomograms_normalized/TS_030_trimmed.rec
+  #   membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/labels/TS_030_membranes_trimmed.mrc
+  # def/034: 
+  #   tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/tomograms_normalized/TS_034_trimmed.rec
+  #   membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/labels/TS_034_membranes_trimmed.mrc
 
-  def/037: 
-    tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/tomograms_normalized/TS_037_trimmed.rec
-    membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/labels/TS_037_membranes_trimmed.mrc
-  def/041: 
-    tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/tomograms_normalized/TS_041_trimmed.rec
-    membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/labels/TS_041_membranes_trimmed.mrc
+  # def/037: 
+  #   tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/tomograms_normalized/TS_037_trimmed.rec
+  #   membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/labels/TS_037_membranes_trimmed.mrc
+  # def/041: 
+  #   tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/tomograms_normalized/TS_041_trimmed.rec
+  #   membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/labels/TS_041_membranes_trimmed.mrc
 
 
-  vpp/001: 
-    tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized/TS_0001_trimmed.rec
-    membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels/TS_0001_membranes_trimmed.mrc
-  vpp/002: 
-    tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized/TS_0002_trimmed.rec
-    membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels/TS_0002_membranes_trimmed.mrc
-  vpp/003: 
-    tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized/TS_0003_trimmed.rec
-    membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels/TS_0003_membranes_trimmed.mrc
-  vpp/004: 
-    tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized/TS_0004_trimmed.rec
-    membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels/TS_0004_membranes_trimmed.mrc
-  vpp/005: 
-    tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized/TS_0005_trimmed.rec
-    membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels/TS_0005_membranes_trimmed.mrc
-  vpp/006: 
-    tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized/TS_0006_trimmed.rec
-    membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels/TS_0006_membranes_trimmed.mrc
+  # vpp/001: 
+  #   tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized/TS_0001_trimmed.rec
+  #   membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels/TS_0001_membranes_trimmed.mrc
+  # vpp/002: 
+  #   tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized/TS_0002_trimmed.rec
+  #   membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels/TS_0002_membranes_trimmed.mrc
+  # vpp/003: 
+  #   tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized/TS_0003_trimmed.rec
+  #   membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels/TS_0003_membranes_trimmed.mrc
+  # vpp/004: 
+  #   tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized/TS_0004_trimmed.rec
+  #   membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels/TS_0004_membranes_trimmed.mrc
+  # vpp/005: 
+  #   tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized/TS_0005_trimmed.rec
+  #   membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels/TS_0005_membranes_trimmed.mrc
+  # vpp/006: 
+  #   tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized/TS_0006_trimmed.rec
+  #   membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels/TS_0006_membranes_trimmed.mrc
 
-  vpp/007: 
-    tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized/TS_0007_trimmed.rec
-    membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels/TS_0007_membranes_trimmed.mrc
-  vpp/008: 
-    tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized/TS_0008_trimmed.rec
-    membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels/TS_0008_membranes_trimmed.mrc
-  vpp/009: 
-    tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized/TS_0009_trimmed.rec
-    membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels/TS_0009_membranes_trimmed.mrc
-  vpp/010: 
-    tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized/TS_0010_trimmed.rec
-    membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels/TS_0010_membranes_trimmed.mrc
+  # vpp/007: 
+  #   tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized/TS_0007_trimmed.rec
+  #   membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels/TS_0007_membranes_trimmed.mrc
+  # vpp/008: 
+  #   tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized/TS_0008_trimmed.rec
+  #   membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels/TS_0008_membranes_trimmed.mrc
+  # vpp/009: 
+  #   tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized/TS_0009_trimmed.rec
+  #   membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels/TS_0009_membranes_trimmed.mrc
+  # vpp/010: 
+  #   tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized/TS_0010_trimmed.rec
+  #   membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels/TS_0010_membranes_trimmed.mrc
 
+  # rein/004:
+  #   tomo: /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/tomograms/01122021_BrnoKrios_arctis_lam1_pos4.mrc
+  #   membrane: /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/labels/01122021_BrnoKrios_arctis_lam1_pos4_memb.mrc
+  # rein/005:
+  #   tomo: /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/tomograms/01122021_BrnoKrios_arctis_lam1_pos5.mrc
+  #   membrane: /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/labels/01122021_BrnoKrios_arctis_lam1_pos5_memb1.mrc
+  # rein/004/pixel-13:
+  #   tomo: /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/tomograms_pixel_13-68/01122021_BrnoKrios_arctis_lam1_pos4.mrc
+  #   membrane: /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/labels_pixel_13-68/01122021_BrnoKrios_arctis_lam1_pos4_memb.mrc
+
+  rein/005/pixel-13:
+    tomo: /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/tomograms_pixel_13-68/01122021_BrnoKrios_arctis_lam1_pos5.mrc
+    membrane: /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/labels_pixel_13-68/01122021_BrnoKrios_arctis_lam1_pos5_memb1.mrc
 
 dataset_path: /media/ssd3/diyor/patch-160-overlap-80
 patch_size: 160
 overlap: 80
+
+# only normalize unnormalized tomos (e.g., in_situ_reinhardtii)
+normalize: True

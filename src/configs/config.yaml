@@ -2,7 +2,8 @@
 # exp_name: denoiseg-f2fd # name that will be used in wandb
 # exp_name: def-vpp-001-norm-shuffle
 # exp_name: def-vpp-009-norm-v2
-exp_name: denoiseg-GN-vpp-norm-p160
+# exp_name: denoiseg-GN-def-norm-p160
+exp_name: memseg-v0
 wandb_project_name: cryo-ttt-v2
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-gn-vpp-norm_data-4919c/epoch=191-val/dice_loss=0.39.ckpt
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-gn-def-norm_data-95656/epoch=380-val/dice_loss=0.49.ckpt
@@ -28,17 +29,18 @@ wandb_project_name: cryo-ttt-v2
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-f2fd-GN-def-norm-p160-5435d/epoch=245-val/dice_loss=0.72.ckpt
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-f2fd-GN-vpp-norm-p160-5cdc7/epoch=71-val/dice_loss=0.59.ckpt
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-f2fd-GN-vpp-norm-p160-m5_10-5ef5f/epoch=197-val/dice_loss=0.65.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-GN-vpp-norm-p160-cb6bb/epoch=157-val/dice_loss=0.52.ckpt
 ckpt_path: null
 seed: 42 # random seed
 debug: False # debug mode, will use cpu only
-devices: [ 2, 3 ] # gpu ids
+devices: [ 2 ] # gpu ids
 
 # data related
 profiler: null
 strategy: ddp # if ddp, then disable shuffle
-shuffle: False
-train_load_num_workers: 8 # number of workers for loading data
-val_load_num_workers: 8
+shuffle: True
+train_load_num_workers: 32 # number of workers for loading data (8)
+val_load_num_workers: 32 #(8)
 pin_memory: False
 persistent_workers: False
 
@@ -53,6 +55,7 @@ enable_progress_bar: True
 
 defaults:
   - _self_
+  - method: memseg
   # - method: denoiseg_f2fd
-  - method: denoiseg_v2
+  # - method: denoiseg_v2
   # - method: deepict_unet3d_ittt

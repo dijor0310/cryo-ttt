@@ -5,14 +5,16 @@ from .denoiseg_dataset import DenoisegPatchInMemoryDataset
 from .denoiseg_dataset import DenoisegPatchDatasetV2
 # from .f2fd_dataset import singleCET_FourierDataset
 from .f2fd_dataset import F2FD_Dataset, F2FD_DatasetV2
+from .memseg_dataset import MemSegDataset
 
 __all__ = {
     "deepict_h5": DeepictPatchDataset,
-    "memseg": CryoETMemSegDataset,
+    # "memseg": CryoETMemSegDataset,
     "denoiseg": DenoisegPatchDataset,
     "denoiseg_v2": DenoisegPatchDatasetV2,
     "denoiseg_in_memory": DenoisegPatchInMemoryDataset,
     "denoiseg_f2fd": F2FD_DatasetV2,
+    "memseg": MemSegDataset,
 }
 
 

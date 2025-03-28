@@ -1,0 +1,40 @@
+model_name: memseg
+
+train_batch_size: 24
+eval_batch_size: 32
+test_batch_size: 48
+dataset: memseg
+
+depth: 2
+initial_features: 4
+encoder_dropout: 0.0
+decoder_dropout: 0.1
+BN: group_norm
+elu: False
+
+learning_rate: 0.003
+max_epochs: 200
+gamma_decay: 0.99
+grad_clip_norm: null
+
+root_dir:  /media/ssd3/diyor/membrain-seg-data/MemBrain_seg_training_data
+
+normalize_data: True
+patch_size: 160
+
+test_data_root_dir: /media/ssd3/diyor/patch-160-overlap-80
+test_tomo_names:
+  - vpp/007
+
+# test_entire_tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized/TS_0007_trimmed.rec
+test_entire_gt: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/labels/TS_034_membranes_trimmed.mrc
+val_gt: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels/TS_0007_membranes_trimmed.mrc
+
+# test_membrain_pred: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/membrain_out_no_aug/TS_0007_trimmed_MemBrain_seg_v10_alpha.ckpt_segmented.mrc
+
+# test_tomo_names:
+#   - def/041
+
+# test_entire_tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/tomograms_normalized/TS_041_trimmed.rec
+# test_entire_gt: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/labels/TS_041_membranes_trimmed.mrc
+# test_membrain_pred: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/membrain_out_no_aug/TS_041_trimmed_MemBrain_seg_v10_alpha.ckpt_segmented.mrc

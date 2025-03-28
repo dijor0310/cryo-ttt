@@ -1,0 +1,4 @@
+#!/bin/bash
+
+tomo_preprocessing match_pixel_size --input-tomogram /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/tomograms/01122021_BrnoKrios_arctis_lam1_pos5.mrc --output-path /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/tomograms_pixel_13-68/01122021_BrnoKrios_arctis_lam1_pos5.mrc --pixel-size-out 13.68 --pixel-size-in 7.84
+tomo_preprocessing match_seg_to_tomo --seg-path /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/labels/01122021_BrnoKrios_arctis_lam1_pos5_memb1.mrc --orig-tomo-path /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/tomograms_pixel_13-68/01122021_BrnoKrios_arctis_lam1_pos5.mrc --output-path /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/labels_pixel_13-68/01122021_BrnoKrios_arctis_lam1_pos5_memb1.mrc
