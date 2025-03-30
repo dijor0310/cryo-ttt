@@ -59,7 +59,7 @@ def test(cfg):
         logger=(
             None
             if cfg.debug
-            else WandbLogger(project=cfg.wandb_project_name, name=exp_name, id=exp_name)
+            else WandbLogger(project=cfg.wandb_project_name, name=exp_name, id=exp_name, config=OmegaConf.to_container(cfg))
         ),
         devices=1 if cfg.debug else cfg.devices,
         gradient_clip_val=cfg.gradient_clip_val,

@@ -66,22 +66,22 @@ class UNet3D(nn.Module):
             nn.Conv3d(in_channels, out_channels, kernel_size=3, padding=1),
             nn.LeakyReLU(),
             nn.GroupNorm(4, out_channels),
-            nn.Dropout(p=self.encoder_dropout),
+            nn.Dropout(p=self.decoder_dropout),
             nn.Conv3d(out_channels, out_channels, kernel_size=3, padding=1),
             nn.LeakyReLU(),
             nn.GroupNorm(4, out_channels),
-            nn.Dropout(p=self.encoder_dropout),
+            nn.Dropout(p=self.decoder_dropout),
         )
 
     def _conv_block_IN_encoder(self, in_channels, out_channels, emb_dim):
         return nn.Sequential(
             nn.Conv3d(in_channels, out_channels, kernel_size=3, padding=1),
             nn.LeakyReLU(),
-            nn.InstanceNorm3d(out_channels),
+            nn.InstanceNorm3d(out_channels, affine=True),
             nn.Dropout(p=self.encoder_dropout),
             nn.Conv3d(out_channels, out_channels, kernel_size=3, padding=1),
             nn.LeakyReLU(),
-            nn.InstanceNorm3d(out_channels),
+            nn.InstanceNorm3d(out_channels, affine=True),
             nn.Dropout(p=self.encoder_dropout),
         )
 
@@ -89,12 +89,12 @@ class UNet3D(nn.Module):
         return nn.Sequential(
             nn.Conv3d(in_channels, out_channels, kernel_size=3, padding=1),
             nn.LeakyReLU(),
-            nn.InstanceNorm3d(out_channels),
-            nn.Dropout(p=self.encoder_dropout),
+            nn.InstanceNorm3d(out_channels, affine=True),
+            nn.Dropout(p=self.decoder_dropout),
             nn.Conv3d(out_channels, out_channels, kernel_size=3, padding=1),
             nn.LeakyReLU(),
-            nn.InstanceNorm3d(out_channels),
-            nn.Dropout(p=self.encoder_dropout),
+            nn.InstanceNorm3d(out_channels, affine=True),
+            nn.Dropout(p=self.decoder_dropout),
         )
 
     def _conv_block_LN_encoder(self, in_channels, out_channels, emb_dim):
@@ -114,11 +114,11 @@ class UNet3D(nn.Module):
             nn.Conv3d(in_channels, out_channels, kernel_size=3, padding=1),
             nn.ReLU(),
             nn.LayerNorm((emb_dim, emb_dim, emb_dim), elementwise_affine=False),
-            nn.Dropout(p=self.encoder_dropout),
+            nn.Dropout(p=self.decoder_dropout),
             nn.Conv3d(out_channels, out_channels, kernel_size=3, padding=1),
             nn.ReLU(),
             nn.LayerNorm((emb_dim, emb_dim, emb_dim), elementwise_affine=False),
-            nn.Dropout(p=self.encoder_dropout),
+            nn.Dropout(p=self.decoder_dropout),
         )
 
     def _conv_block_BN_encoder(self, in_channels, out_channels):
@@ -728,7 +728,7 @@ class MemSeg(L.LightningModule):
             "val/macro_dice": dice_score,
             "val/macro_recall": binary_recall(reassembled_pred_binary, self.val_gt),
             "val/macro_precision": binary_precision(reassembled_pred_binary, self.val_gt),
-            "val/rsm_pred": wandb.Image(FT.to_pil_image(normalize_min_max(reassembled_pred_binary.squeeze().sum(dim=0)).to(torch.uint8), mode="L")),
+            "val/rsm_pred": wandb.Image(FT.to_pil_image(normalize_min_max(reassembled_pred_binary.squeeze().sum(dim=-1)).to(torch.uint8), mode="L")),
             "epoch": self.current_epoch,
         })
         

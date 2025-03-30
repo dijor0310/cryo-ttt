@@ -33,7 +33,7 @@ wandb_project_name: cryo-ttt-v2
 ckpt_path: null
 seed: 42 # random seed
 debug: False # debug mode, will use cpu only
-devices: [ 2 ] # gpu ids
+devices: [ 0, 2 ] # gpu ids
 
 # data related
 profiler: null

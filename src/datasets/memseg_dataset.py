@@ -7,6 +7,8 @@ import numpy as np
 from pathlib import Path
 import pickle
 
+from datasets.memseg.memseg_augmentation import get_training_transforms
+
 class MemSegDataset(Dataset):
     def __init__(self, config, is_validation=False, is_test=False):
 
@@ -29,6 +31,8 @@ class MemSegDataset(Dataset):
         else:
             self.image_dir = os.path.join(config.root_dir, "imagesTr")
             self.label_dir = os.path.join(config.root_dir, "labelsTr")
+
+            self.transforms = get_training_transforms(prob_to_one=False)
 
         self.image_filenames = sorted([f for f in os.listdir(self.image_dir) if f.endswith(".nii.gz")])
         self.label_filenames = [f.rsplit("_", 1)[0] + ".nii.gz" for f in self.image_filenames]
@@ -59,7 +63,12 @@ class MemSegDataset(Dataset):
             "label": label[np.newaxis, ...]
         }
 
+
         sample = self.get_random_crop(sample)
+
+        if self.transforms:
+            sample = self.transforms(sample)
+            
         return sample
 
 

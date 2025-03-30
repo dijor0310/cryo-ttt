@@ -25,9 +25,6 @@ def train(cfg):
     cfg = OmegaConf.merge(cfg, cfg.method)
 
     model = build_model(cfg)
-    # to delete
-    # from models.denoiseg import Denoiseg
-    # model = Denoiseg.load_from_checkpoint(cfg.ckpt_path, config=cfg)
 
     train_set = build_dataset(cfg)
     val_set = build_dataset(cfg, val=True)
@@ -76,7 +73,7 @@ def train(cfg):
         logger=(
             None
             if cfg.debug
-            else WandbLogger(project=cfg.wandb_project_name, name=exp_name, id=exp_name)
+            else WandbLogger(project=cfg.wandb_project_name, name=exp_name, id=exp_name, config=OmegaConf.to_container(cfg))
         ),
         devices=1 if cfg.debug else cfg.devices,
         gradient_clip_val=cfg.gradient_clip_val,
@@ -92,7 +89,6 @@ def train(cfg):
         num_sanity_val_steps=cfg.num_sanity_val_steps,
         enable_progress_bar=cfg.enable_progress_bar,
     )
-    print(trainer.strategy)
 
     # automatically resume training
     # if cfg.ckpt_path is None and not cfg.debug:
