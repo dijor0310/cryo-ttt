@@ -59,9 +59,20 @@ tomo_list:
   #   tomo: /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/tomograms_pixel_13-68/01122021_BrnoKrios_arctis_lam1_pos4.mrc
   #   membrane: /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/labels_pixel_13-68/01122021_BrnoKrios_arctis_lam1_pos4_memb.mrc
 
-  rein/005/pixel-13:
-    tomo: /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/tomograms_pixel_13-68/01122021_BrnoKrios_arctis_lam1_pos5.mrc
-    membrane: /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/labels_pixel_13-68/01122021_BrnoKrios_arctis_lam1_pos5_memb1.mrc
+  # rein/005/pixel-13:
+  #   tomo: /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/tomograms_pixel_13-68/01122021_BrnoKrios_arctis_lam1_pos5.mrc
+  #   membrane: /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/labels_pixel_13-68/01122021_BrnoKrios_arctis_lam1_pos5_memb1.mrc
+
+  # rein/005/pixel-10:
+  #   tomo: /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/tomograms_pixel_10/01122021_BrnoKrios_arctis_lam1_pos5.mrc
+  #   membrane: /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/labels_pixel_10/01122021_BrnoKrios_arctis_lam1_pos5_memb1.mrc
+    
+  # rein/004/pixel-10:
+  #   tomo: /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/tomograms_pixel_10/01122021_BrnoKrios_arctis_lam1_pos4.mrc
+  #   membrane: /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/labels_pixel_10/01122021_BrnoKrios_arctis_lam1_pos4_memb.mrc
+  vpp/003/pixel-10:
+    tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized_pixel_10/TS_0003_trimmed.rec
+    membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels_pixel_10/TS_0003_membranes_trimmed.mrc
 
 dataset_path: /media/ssd3/diyor/patch-160-overlap-80
 patch_size: 160

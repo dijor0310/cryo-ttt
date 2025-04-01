@@ -1,4 +1,31 @@
 #!/bin/bash
 
-tomo_preprocessing match_pixel_size --input-tomogram /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/tomograms/01122021_BrnoKrios_arctis_lam1_pos5.mrc --output-path /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/tomograms_pixel_13-68/01122021_BrnoKrios_arctis_lam1_pos5.mrc --pixel-size-out 13.68 --pixel-size-in 7.84
-tomo_preprocessing match_seg_to_tomo --seg-path /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/labels/01122021_BrnoKrios_arctis_lam1_pos5_memb1.mrc --orig-tomo-path /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/tomograms_pixel_13-68/01122021_BrnoKrios_arctis_lam1_pos5.mrc --output-path /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/labels_pixel_13-68/01122021_BrnoKrios_arctis_lam1_pos5_memb1.mrc
+# RAW_TOMO=/mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/tomograms/01122021_BrnoKrios_arctis_lam1_pos4.mrc
+# OUTPUT_TOMO=/mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/tomograms_pixel_10/01122021_BrnoKrios_arctis_lam1_pos4.mrc
+
+# RAW_LABEL=/mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/labels/01122021_BrnoKrios_arctis_lam1_pos4_memb.mrc
+# OUTPUT_LABEL=/mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/labels_pixel_10/01122021_BrnoKrios_arctis_lam1_pos4_memb.mrc
+
+RAW_TOMO=/mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized/TS_0003_trimmed.rec
+OUTPUT_TOMO=/mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized_pixel_10/TS_0003_trimmed.rec
+
+RAW_LABEL=/mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels/TS_0003_membranes_trimmed.mrc
+OUTPUT_LABEL=/mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels_pixel_10/TS_0003_membranes_trimmed.mrc
+
+INPUT_PX_SIZE=13.48
+OUTPUT_PX_SIZE=10.0
+
+echo $RAW_TOMO
+
+tomo_preprocessing match_pixel_size \
+    --input-tomogram $RAW_TOMO \
+    --output-path $OUTPUT_TOMO \
+    --pixel-size-in $INPUT_PX_SIZE \
+    --pixel-size-out $OUTPUT_PX_SIZE
+
+echo $OUTPUT_TOMO
+
+tomo_preprocessing match_seg_to_tomo \
+    --seg-path $RAW_LABEL \
+    --orig-tomo-path $OUTPUT_TOMO \
+    --output-path $OUTPUT_LABEL

@@ -1,3 +1,4 @@
+import os
 import torch
 import pytorch_lightning as pl
 
@@ -40,7 +41,7 @@ def train(cfg):
         filename="{epoch}-{val/dice_loss:.2f}",
         save_top_k=5,
         mode="min",  # 'min' for loss/error, 'max' for accuracy
-        dirpath=f"./ttt_ckpt/{exp_name}",
+        dirpath=f"/mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/{exp_name}",
     )
     learning_rate_monitor = LearningRateMonitor(logging_interval="epoch")
 

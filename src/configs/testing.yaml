@@ -4,10 +4,19 @@ wandb_project_name: cryo-ttt-ttt
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/memseg-v0-09606/epoch=184-val/dice_loss=0.37.ckpt
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/memseg-v0-f321b/epoch=85-val/dice_loss=0.23.ckpt
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/memseg-v0-97b27/epoch=182-val/dice_loss=0.75.ckpt
-ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/memseg-v0-97b27/epoch=111-val/dice_loss=0.76.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/memseg-v0-97b27/epoch=111-val/dice_loss=0.76.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/memseg-v0-f67f8/epoch=159-val/dice_loss=0.65.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/memseg-v0-f67f8/epoch=147-val/dice_loss=0.64.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/memseg-v0-1ec3f/epoch=179-val/dice_loss=0.65.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/memseg-dynunet-f2fd-chlamy-94d4d/epoch=520-val/dice_loss=0.48.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/memseg-dynunet-f2fd-chlamy-94d4d/epoch=543-val/dice_loss=0.46.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/memseg-dynunet-f2fd-chlamy-94d4d/epoch=608-val/dice_loss=0.44.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/memseg-dynunet-f2fd-chlamy-94d4d/epoch=678-val/dice_loss=0.43.ckpt
+ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/memseg-dynunet-f2fd-chlamy-94d4d/epoch=820-val/dice_loss=0.40.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/memseg-dynunet-f2fd-chlamy-94d4d/epoch=797-val/dice_loss=0.38.ckpt
 seed: 42 # random seed
 debug: False # debug mode, will use cpu only
-devices: [ 2 ] # gpu ids
+devices: [ 0 ] # gpu ids
 
 # data related
 profiler: null

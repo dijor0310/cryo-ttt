@@ -16,6 +16,9 @@ from torch.nn.functional import binary_cross_entropy_with_logits
 
 from models.losses import IgnoreLabelDiceCELoss
 
+from monai.networks.nets import DynUNet
+from monai.inferers import SlidingWindowInferer
+
 # import tensors.actions as actions
 
 
@@ -520,6 +523,12 @@ def precision_from_conf_matrix(conf_matrix: torch.Tensor):
 def recall_from_conf_matrix(conf_matrix: torch.Tensor):
     return conf_matrix[1, 1] / (conf_matrix[1, 1] + conf_matrix[1, 0])
 
+def standardize(tensor: torch.Tensor):
+
+    print("Mean intensity: ", tensor.mean())
+    print("Std intensity: ", tensor.std())
+    return (tensor - tensor.mean()) / (tensor.std() + 1e-8)
+
 
 class MemSeg(L.LightningModule):
     def __init__(self, config):
@@ -527,19 +536,42 @@ class MemSeg(L.LightningModule):
         self.config = config
         self.learning_rate = self.config.learning_rate
 
-        self.model = UNet3D(
-            out_channels=1,
-            depth=config.depth,
-            initial_features=config.initial_features,
-            decoder_dropout=config.decoder_dropout,
-            encoder_dropout=config.encoder_dropout,
-            BN=config.BN,
-            elu=config.elu,
-            final_activation=None,
-        )
+        # self.model = UNet3D(
+        #     out_channels=1,
+        #     depth=config.depth,
+        #     initial_features=config.initial_features,
+        #     decoder_dropout=config.decoder_dropout,
+        #     encoder_dropout=config.encoder_dropout,
+        #     BN=config.BN,
+        #     elu=config.elu,
+        #     final_activation=None,
+        # )
+
+        if self.config.dynunet.enable:
+            self.model = DynUNet(
+                spatial_dims=3,
+                in_channels=1,
+                out_channels=1,
+                kernel_size=self.config.dynunet.kernel_size,
+                strides=self.config.dynunet.strides,
+                upsample_kernel_size=self.config.dynunet.upsample_kernel_size,
+                filters=self.config.dynunet.filters,
+                res_block=self.config.dynunet.res_block,
+            )
+        else:
+            self.model = UNet3D(
+                out_channels=1,
+                depth=config.depth,
+                initial_features=config.initial_features,
+                decoder_dropout=config.decoder_dropout,
+                encoder_dropout=config.encoder_dropout,
+                BN=config.BN,
+                elu=config.elu,
+                final_activation=None,
+            )
 
         # self.criterion = DiceCELoss(sigmoid=True, lambda_ce=self.config.lambda_ce)
-        # self.reconstruction_loss = nn.MSELoss(reduction="none")
+        self.reconstruction_loss = nn.MSELoss(reduction="mean")
         self.criterion = IgnoreLabelDiceCELoss(
             ignore_label=2,
             reduction='mean',
@@ -553,7 +585,7 @@ class MemSeg(L.LightningModule):
         self.val_preds = []
         self.val_gt = torch.Tensor(mrcfile.read(self.config.val_gt))[None, None, ...]
 
-        self.val_gt = self.val_gt.swapaxes(-1, -3)
+        # self.val_gt = self.val_gt.swapaxes(-1, -3)
 
     
     def training_step(self, batch, batch_idx):
@@ -728,7 +760,7 @@ class MemSeg(L.LightningModule):
             "val/macro_dice": dice_score,
             "val/macro_recall": binary_recall(reassembled_pred_binary, self.val_gt),
             "val/macro_precision": binary_precision(reassembled_pred_binary, self.val_gt),
-            "val/rsm_pred": wandb.Image(FT.to_pil_image(normalize_min_max(reassembled_pred_binary.squeeze().sum(dim=-1)).to(torch.uint8), mode="L")),
+            "val/rsm_pred": wandb.Image(FT.to_pil_image(normalize_min_max(reassembled_pred_binary.squeeze().sum(dim=0)).to(torch.uint8), mode="L")),
             "epoch": self.current_epoch,
         })
         
@@ -742,7 +774,7 @@ class MemSeg(L.LightningModule):
         self.test_preds, self.test_start_coords = [], []
 
         self.test_gt = torch.Tensor(mrcfile.read(self.config.test_entire_gt))[None, None, ...]
-        self.test_gt = self.test_gt.swapaxes(-1, -3)
+        # self.test_gt = self.test_gt.swapaxes(-1, -3)
 
         # TODO ttt before testing (no in this model)
 
@@ -782,27 +814,366 @@ class MemSeg(L.LightningModule):
             "test/macro_dice": dice_score,
             "test/macro_recall": binary_recall(reassembled_pred_binary, self.test_gt),
             "test/macro_precision": binary_precision(reassembled_pred_binary, self.test_gt),
-            "test/rsm_pred": wandb.Image(FT.to_pil_image(normalize_min_max(reassembled_pred_binary.squeeze().sum(dim=-1)).to(torch.uint8), mode="L")),
+            "test/rsm_pred": wandb.Image(FT.to_pil_image(normalize_min_max(reassembled_pred_binary.squeeze().sum(dim=0)).to(torch.uint8), mode="L")),
             "epoch": self.current_epoch,
         })
-
-        # self.log(
-        #     "val/macro_dice",
-        #     dice_score,
-        #     on_step=False,
-        #     on_epoch=True,
-        # )
-
-        
-        # self.test_start_coords = []
-        # self.val_preds = []
-        # return super().on_validation_epoch_end()
 
 
     def configure_optimizers(self):
         # optimizer = torch.optim.Adam(
         #     self.model.parameters(), lr=self.learning_rate
         # )
+        optimizer = torch.optim.AdamW(
+            self.model.parameters(),
+            lr=self.learning_rate,
+            weight_decay=1e-4,
+        )
+
+        scheduler = torch.optim.lr_scheduler.ExponentialLR(
+            optimizer=optimizer,
+            gamma=self.config.gamma_decay
+        )
+
+
+        return [optimizer], [scheduler]
+
+
+class MemDenoiseg(L.LightningModule):
+    def __init__(self, config):
+        super().__init__()
+        self.config = config
+        self.learning_rate = self.config.learning_rate
+
+        if self.config.dynunet.enable:
+            self.model = DynUNet(
+                spatial_dims=3,
+                in_channels=1,
+                out_channels=2,
+                kernel_size=self.config.dynunet.kernel_size,
+                strides=self.config.dynunet.strides,
+                upsample_kernel_size=self.config.dynunet.upsample_kernel_size,
+                filters=self.config.dynunet.filters,
+                res_block=self.config.dynunet.res_block,
+            )
+        else:
+            self.model = UNet3D(
+                out_channels=1,
+                depth=config.depth,
+                initial_features=config.initial_features,
+                decoder_dropout=config.decoder_dropout,
+                encoder_dropout=config.encoder_dropout,
+                BN=config.BN,
+                elu=config.elu,
+                final_activation=None,
+            )
+
+        self.reconstruction_loss = nn.MSELoss(reduction='none')
+        self.criterion = IgnoreLabelDiceCELoss(
+            ignore_label=2,
+            reduction='mean',
+        )
+
+        self.dice_loss = MaskedDiceLoss(sigmoid=True)
+        self.dice_score = DiceMetric()
+
+        self.val_start_coords = []
+        self.val_preds = []
+        # self.val_gt = torch.Tensor(mrcfile.read(self.config.val_gt))[None, None, ...]
+        self.inferer = SlidingWindowInferer(
+            roi_size=(config.patch_size, ) * 3,
+            sw_batch_size=config.test_batch_size,
+            overlap=0.5,
+            progress=True,
+            mode="gaussian",
+            device=torch.device("cpu"), # this is device for stitching (reassembling) 
+        )
+
+
+    def masked_rec_loss(self, pred, target, mask):
+        masked_loss = self.reconstruction_loss(pred, target) * mask
+        return masked_loss.sum() / mask.sum()
+    
+    def masked_accuracy(self, pred, target, mask):
+        return (((sigmoid(pred) > 0.5).int() == target) * mask.int()).sum() / mask.sum()
+
+    def training_step(self, batch, batch_idx):
+        x, y_out = batch["image"], batch["label"]
+        
+        x_input, x_target = batch["noisy_1"], batch["noisy_2"]
+        batch_size = x.shape[0]
+
+        out = self.model(x_input)
+
+        x_hat, y_hat = torch.unbind(out, dim=1)
+
+        x_hat, y_hat = x_hat.unsqueeze(1), y_hat.unsqueeze(1)
+
+        loss, bce_loss, dice_loss = self.criterion(y_hat, y_out)
+        rec_loss = self.masked_rec_loss(x_hat, x_target, mask=(y_out != 2))
+
+        loss = loss + rec_loss
+
+        self.log(
+            "train/loss",
+            loss,
+            batch_size=x.shape[0],
+            on_step=False,
+            on_epoch=True,
+            sync_dist=True,
+        )
+        # mask = y_out != 2.0
+
+        # acc = (((sigmoid(y_hat) > 0.5).int() == y_out) * mask.int()).sum() / mask.sum()
+        acc = self.masked_accuracy(y_hat, y_out, (y_out != 2.0))
+        self.log(
+            "train/accuracy",
+            acc,
+            on_step=False,
+            on_epoch=True,
+            batch_size=batch_size,
+            sync_dist=True,
+        )
+
+        self.log(
+            "train/dice_loss",
+            dice_loss,
+            on_step=False,
+            on_epoch=True,
+            batch_size=batch_size,
+            sync_dist=True,
+        )
+
+        self.log(
+            "train/ce_loss",
+            bce_loss, 
+            on_step=False,
+            on_epoch=True,
+            batch_size=batch_size,
+            sync_dist=True,
+        )
+
+        self.log(
+            "train/mse_loss",
+            rec_loss,
+            on_step=False,
+            on_epoch=True,
+            batch_size=batch_size,
+            sync_dist=True,
+        )
+
+        return loss
+
+    def validation_step(self, batch, batch_idx):
+        x, y_out = batch["image"], batch["label"]
+        
+        x_input, x_target = batch["noisy_1"], batch["noisy_2"]
+        batch_size = x.shape[0]
+
+        out = self.model(x_input)
+
+        x_hat, y_hat = torch.unbind(out, dim=1)
+
+        x_hat, y_hat = x_hat.unsqueeze(1), y_hat.unsqueeze(1)
+
+        loss, bce_loss, dice_loss = self.criterion(y_hat, y_out)
+        rec_loss = self.masked_rec_loss(x_hat, x_target, mask=(y_out != 2))
+
+        loss = loss + rec_loss
+
+        self.log(
+            "val/loss",
+            loss,
+            batch_size=x.shape[0],
+            on_step=False,
+            on_epoch=True,
+            sync_dist=True,
+        )
+
+        # mask = y_out != 2.0
+
+        # acc = (((sigmoid(y_hat) > 0.5).int() == y_out) * mask).sum() / mask.sum()
+        acc = self.masked_accuracy(y_hat, y_out, (y_out != 2.0))
+        self.log(
+            "val/accuracy",
+            acc,
+            on_step=False,
+            on_epoch=True,
+            batch_size=batch_size,
+            sync_dist=True,
+        )
+
+        self.log(
+            "val/dice_loss",
+            dice_loss,
+            on_step=False,
+            on_epoch=True,
+            batch_size=batch_size,
+            sync_dist=True,
+        )
+        self.log(
+            "val/ce_loss",
+            bce_loss,
+            on_step=False,
+            on_epoch=True,
+            batch_size=batch_size,
+            sync_dist=True,
+        )
+        self.log(
+            "val/mse_loss",
+            rec_loss,
+            on_step=False,
+            on_epoch=True,
+            batch_size=batch_size,
+            sync_dist=True,
+        )
+
+        slice_to_log = (y_out[0].squeeze() == 1).sum(dim=(-1, -2)).argmax()
+        self.logger.experiment.log(
+            {
+                "val/target": wandb.Image(x_target[0, 0, slice_to_log]),
+                "val/tomo": wandb.Image(x[0, 0, slice_to_log]),
+                "val/denoised": wandb.Image(x_hat[0, 0, slice_to_log]),
+                "val/label": wandb.Image(y_out[0, 0, slice_to_log]),
+                "val/predict": wandb.Image(FT.to_pil_image(((y_hat[0, 0, slice_to_log].sigmoid() > 0.5).int() * 255).to(torch.uint8), mode="L"))
+            }
+        )
+
+        if "start_coord" in batch:
+            start_coord = batch["start_coord"]
+            gathered_start_coords = self.all_gather(start_coord.detach())
+            gathered_y_hats = self.all_gather(y_hat.squeeze(1).detach())
+
+            if self.trainer.global_rank == 0:
+
+                self.val_start_coords.extend(torch.unbind(gathered_start_coords.cpu().flatten(end_dim=1), dim=0))
+                self.val_preds.extend(torch.unbind(gathered_y_hats.cpu().sigmoid().flatten(end_dim=1), dim=0))
+
+    def on_validation_epoch_end(self):
+
+        if not self.val_preds or self.trainer.global_rank != 0:
+            return
+        
+        reassembled_pred = reassemble_subtomos(
+            subtomos=self.val_preds,
+            subtomo_start_coords=self.val_start_coords,
+            subtomo_overlap=80,
+            crop_to_size=self.val_gt.shape[2:],
+        )
+
+        reassembled_pred_binary = (reassembled_pred[None, None, ...] > 0.5).to(torch.uint8)
+        dice_score = self.dice_score(reassembled_pred_binary, self.val_gt)
+
+        self.logger.experiment.log({
+            "val/macro_dice": dice_score,
+            "val/macro_recall": binary_recall(reassembled_pred_binary, self.val_gt),
+            "val/macro_precision": binary_precision(reassembled_pred_binary, self.val_gt),
+            "val/rsm_pred": wandb.Image(FT.to_pil_image(normalize_min_max(reassembled_pred_binary.squeeze().sum(dim=-1)).to(torch.uint8), mode="L")),
+            "epoch": self.current_epoch,
+        })
+        
+        self.val_start_coords = []
+        self.val_preds = []
+
+    def on_test_start(self):
+        if self.trainer.global_rank != 0:
+            return
+        
+        self.test_preds, self.test_denoiseds, self.test_start_coords = [], [], []
+
+        self.test_gt = torch.Tensor(mrcfile.read(self.config.test_entire_gt))[None, None, ...]
+        # if self.config.monai_inference:
+        self.test_tomo = torch.Tensor(mrcfile.read(self.config.test_entire_tomo))[None, None, ...]
+        # self.test_tomo = standardize(self.test_tomo)
+
+        # TODO ttt before testing (no in this model)
+
+    def test_step(self, batch, batch_idx):
+
+        if self.config.monai_inference and batch_idx != 0:
+            return     
+
+        if self.config.monai_inference:
+            self.monai_test_pred = self.inferer(
+                inputs=self.test_tomo.to(device=torch.device(self.trainer.local_rank)),
+                network=self.model,
+            )
+            return
+        
+        
+        x_hats, y_hats = [], []
+        for key in self.config.inference_key:
+            x = batch[key]
+            out = self.model(x)
+            x_hat, y_hat = torch.unbind(out, dim=1)
+            x_hat, y_hat = x_hat.unsqueeze(1), y_hat.unsqueeze(1)
+
+            x_hats.append(x_hat)
+            y_hats.append(y_hat)
+
+        x_hat = torch.stack(x_hats, dim=0).mean(dim=0)
+        y_hat = torch.stack(y_hats, dim=0).mean(dim=0)
+        
+        if "start_coord" in batch:
+            start_coord = batch["start_coord"]
+            gathered_start_coords = self.all_gather(start_coord.detach())
+            gathered_y_hats = self.all_gather(y_hat.squeeze(1).detach())
+            gathered_x_hats = self.all_gather(x_hat.squeeze(1).detach())
+
+            if self.trainer.global_rank == 0:
+
+                self.test_start_coords.extend(torch.unbind(gathered_start_coords.cpu().flatten(end_dim=1), dim=0))
+                self.test_preds.extend(torch.unbind(gathered_y_hats.cpu().sigmoid().flatten(end_dim=1), dim=0))
+                self.test_denoiseds.extend(torch.unbind(gathered_x_hats.cpu().flatten(end_dim=1), dim=0))
+
+    def on_test_epoch_end(self):
+
+        if self.config.monai_inference:
+            self.monai_test_pred = (self.monai_test_pred[:, 1].unsqueeze(1) > 0.0).int()
+            dice_score = self.dice_score(self.monai_test_pred, self.test_gt)
+
+            self.logger.experiment.log({
+                "test/macro_dice": dice_score,
+                "test/macro_recall": binary_recall(self.monai_test_pred, self.test_gt),
+                "test/macro_precision": binary_precision(self.monai_test_pred, self.test_gt),
+                "test/rsm_pred": wandb.Image(FT.to_pil_image(normalize_min_max(self.monai_test_pred.squeeze().sum(dim=0)).to(torch.uint8), mode="L")),
+                "epoch": self.current_epoch,
+            })
+            return
+
+        
+        if self.trainer.global_rank != 0:
+            return
+        
+        reassembled_pred = reassemble_subtomos(
+            subtomos=self.test_preds,
+            subtomo_start_coords=self.test_start_coords,
+            subtomo_overlap=80,
+            crop_to_size=self.test_gt.shape[2:],
+        )
+
+        reassembled_denoised = reassemble_subtomos(
+            subtomos=self.test_denoiseds,
+            subtomo_start_coords=self.test_start_coords,
+            subtomo_overlap=80,
+            crop_to_size=self.test_gt.shape[2:]
+        )
+        slice_to_log = self.test_gt.squeeze().sum(dim=(-1, -2)).argmax(dim=0)
+
+        reassembled_pred_binary = (reassembled_pred[None, None, ...] > 0.5).to(torch.uint8)
+        dice_score = self.dice_score(reassembled_pred_binary, self.test_gt)
+
+        self.logger.experiment.log({
+            "test/macro_dice": dice_score,
+            "test/macro_recall": binary_recall(reassembled_pred_binary, self.test_gt),
+            "test/macro_precision": binary_precision(reassembled_pred_binary, self.test_gt),
+            "test/pred": wandb.Image(FT.to_pil_image(normalize_min_max(reassembled_pred_binary.squeeze().sum(dim=0)).to(torch.uint8), mode="L")),
+            "test/denoised": wandb.Image(reassembled_denoised[slice_to_log]),
+            "test/label": wandb.Image(FT.to_pil_image(normalize_min_max(self.test_gt.squeeze().sum(dim=0)).to(torch.uint8), mode="L")),
+            "test/tomo": wandb.Image(self.test_tomo.squeeze()[slice_to_log]),
+            "epoch": self.current_epoch,
+        })
+
+    def configure_optimizers(self):
         optimizer = torch.optim.AdamW(
             self.model.parameters(),
             lr=self.learning_rate,
