@@ -1,4 +1,4 @@
-from .dataset import CryoETMemSegDataset
+# from .dataset import CryoETMemSegDataset
 from .deepict_dataset import DeepictPatchDataset
 from .denoiseg_dataset import DenoisegPatchDataset
 from .denoiseg_dataset import DenoisegPatchInMemoryDataset
