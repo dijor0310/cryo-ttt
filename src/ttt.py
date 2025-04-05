@@ -1,0 +1,101 @@
+import torch
+import pytorch_lightning as pl
+
+from pytorch_lightning.loggers import WandbLogger
+from torch.utils.data import DataLoader
+from models import build_model
+from datasets import build_dataset
+from utils.utils import set_seed
+from pytorch_lightning.callbacks import (
+    ModelCheckpoint,
+    LearningRateMonitor,
+)  # Import ModelCheckpoint
+import hydra
+from omegaconf import OmegaConf
+import uuid
+
+from models.memseg import MemDenoisegTTT
+
+torch.set_float32_matmul_precision("medium")
+
+
+@hydra.main(version_base=None, config_path="configs", config_name="ttt")
+def ttt(cfg):
+    set_seed(cfg.seed)
+    OmegaConf.set_struct(cfg, False)  # Open the struct
+    cfg = OmegaConf.merge(cfg, cfg.method)
+
+    model = build_model(cfg)
+
+    train_set = build_dataset(cfg, test=True)
+    # val_set = build_dataset(cfg, val=True)
+
+    train_batch_size = max(cfg.method["train_batch_size"] // len(cfg.devices), 1)
+    # eval_batch_size = max(cfg.method["eval_batch_size"] // len(cfg.devices), 1)
+
+    call_backs = []
+
+    exp_name = f"{cfg.exp_name}-{str(uuid.uuid4())[:5]}"
+    checkpoint_callback = ModelCheckpoint(
+        monitor="train/dice_loss",  # Replace with your validation metric
+        filename="{epoch}-{train/dice_loss:.2f}",
+        save_top_k=5,
+        mode="min",  # 'min' for loss/error, 'max' for accuracy
+        dirpath=f"/mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/{exp_name}",
+    )
+    learning_rate_monitor = LearningRateMonitor(logging_interval="epoch")
+
+    call_backs.extend([checkpoint_callback, learning_rate_monitor])
+
+    train_loader = DataLoader(
+        train_set,
+        batch_size=train_batch_size,
+        num_workers=cfg.train_load_num_workers,
+        shuffle=cfg.shuffle,
+        drop_last=False,
+        pin_memory=cfg.pin_memory,
+        persistent_workers=cfg.persistent_workers,
+    )
+
+    val_loader = DataLoader([0])
+
+    trainer = pl.Trainer(
+        max_epochs=cfg.method.max_epochs,
+        logger=(
+            None
+            if cfg.debug
+            else WandbLogger(project=cfg.wandb_project_name, name=exp_name, id=exp_name, config=OmegaConf.to_container(cfg))
+        ),
+        devices=1 if cfg.debug else cfg.devices,
+        gradient_clip_val=cfg.gradient_clip_val,
+        accumulate_grad_batches=cfg.accumulate_grad_batches,
+        accelerator="cpu" if cfg.debug else "gpu",
+        profiler=cfg.profiler,
+        # strategy="auto" if cfg.debug else "ddp",
+        # strategy="auto",
+        strategy=cfg.strategy,
+        callbacks=call_backs,
+        check_val_every_n_epoch=cfg.check_val_every_n_epochs,
+        log_every_n_steps=cfg.log_every_n_steps,
+        num_sanity_val_steps=cfg.num_sanity_val_steps,
+        enable_progress_bar=cfg.enable_progress_bar,
+    )
+
+    # print(model.__class__)
+    model = model.__class__.load_from_checkpoint(cfg.ckpt_path, config=cfg, map_location=torch.device("cpu"))
+
+    trainer.validate(
+        model=model,
+        dataloaders=val_loader,
+        # ckpt_path=cfg.ckpt_path,
+    )
+    trainer.fit(
+        model=model,
+        train_dataloaders=train_loader,
+        val_dataloaders=val_loader,
+        # ckpt_path=cfg.ckpt_path,
+    )
+
+
+if __name__ == "__main__":
+    ttt()

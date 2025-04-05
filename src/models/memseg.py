@@ -11,6 +11,7 @@ import torchvision.transforms.functional as FT
 from torchmetrics.functional import precision, recall
 
 from torchmetrics.functional.classification import binary_confusion_matrix, binary_precision, binary_recall
+from torchmetrics import Dice, Precision, Recall
 import mrcfile
 from torch.nn.functional import binary_cross_entropy_with_logits
 
@@ -18,6 +19,9 @@ from models.losses import IgnoreLabelDiceCELoss
 
 from monai.networks.nets import DynUNet
 from monai.inferers import SlidingWindowInferer
+
+from datasets.transforms import F2FDMaskingTransform
+from monai.transforms import Compose, ToTensor
 
 # import tensors.actions as actions
 
@@ -1186,4 +1190,110 @@ class MemDenoiseg(L.LightningModule):
         )
 
 
+        return [optimizer], [scheduler]
+
+
+class MemDenoisegTTT(MemDenoiseg):
+
+    def __init__(self, config):
+        super().__init__(config)
+        
+        self.inference_transforms = Compose([
+            F2FDMaskingTransform(
+                bernoulli_mask_ratio=config.bernoulli_mask_ratio,
+                phase_inversion_ratio=config.phase_inversion_ratio,
+                min_mask_radius=config.min_mask_radius,
+                max_mask_radius=config.max_mask_radius,
+            ),
+            ToTensor(dtype=torch.float)
+        ]) if self.config.masked_inference else Compose([ToTensor(dtype=torch.float)])
+
+        self.test_tomo = torch.Tensor(mrcfile.read(self.config.test_entire_tomo))[None, None, ...]
+        self.test_gt = torch.Tensor(mrcfile.read(self.config.test_entire_gt))[None, None, ...]
+
+    def forward(self, batch):
+        x, y_out = batch["image"], batch["label"]
+        x_input, x_target = batch["noisy_1"], batch["noisy_2"]
+        batch_size = x.shape[0]
+        out = self.model(x_input)
+        x_hat, y_hat = torch.unbind(out, dim=1)
+        x_hat, y_hat = x_hat.unsqueeze(1), y_hat.unsqueeze(1)
+        loss, bce_loss, dice_loss = self.criterion(y_hat, y_out)
+        rec_loss = self.masked_rec_loss(x_hat, x_target, mask=(y_out != 2))
+        loss = loss + rec_loss
+
+        acc = self.masked_accuracy(y_hat, y_out, (y_out != 2.0))
+
+        return {
+            "metrics": {
+                "train/loss": loss,
+                "train/ce_loss": bce_loss,
+                "train/dice_loss": dice_loss,
+                "train/mse_loss": rec_loss,
+                "train/accuracy": acc,
+            },
+            "x_hat": x_hat,
+            "y_hat": y_hat,
+            "batch_size": batch_size
+        }
+    
+    def training_step(self, batch, batch_idx):
+        out = self(batch)
+        self.log_dict(
+            out["metrics"],
+            on_step=False,
+            on_epoch=True,
+            batch_size=out["batch_size"],
+            sync_dist=True,
+        )
+
+        return out["metrics"]["train/mse_loss"]
+
+    def validation_step(self, batch, batch_idx):
+        pass
+
+    def on_validation_epoch_end(self):
+        if self.trainer.global_rank != 0:
+            return
+        
+        pred = self.inferer(
+            inputs=self.test_tomo.to(device=self.device),
+            network=self.patch_inference,
+            # network=self.model,
+        )
+
+        segmented = (pred[:, 1] > 0.0).int().unsqueeze(1)
+        denoised = pred[:, 0].unsqueeze(1)
+        dice_score = self.dice_score(segmented, self.test_gt)
+
+        self.logger.experiment.log({
+            "val/macro_dice": dice_score,
+            "val/macro_recall": binary_recall(segmented, self.test_gt),
+            "val/macro_precision": binary_precision(segmented, self.test_gt),
+            "val/rsm_pred": wandb.Image(FT.to_pil_image(normalize_min_max(segmented.squeeze().sum(dim=0)).to(torch.uint8), mode="L")),
+            "val/denoised": wandb.Image(denoised.squeeze()[100]),
+            "epoch": self.current_epoch,
+        })
+
+    def patch_inference(self, patch):
+        outputs = []
+        for _ in range(self.config.inference_iterations):
+            out = self.model(self.inference_transforms(patch))
+            outputs.append(out)
+
+        return torch.stack(outputs, dim=0).mean(dim=0)
+
+    def configure_optimizers(self):
+
+        # Use SGD for TTT (better than Adam)
+        
+        optimizer = torch.optim.SGD(
+            self.model.parameters(),
+            lr=self.learning_rate,
+            momentum=0.9,
+        )
+        scheduler = torch.optim.lr_scheduler.ExponentialLR(
+            optimizer=optimizer,
+            gamma=self.config.gamma_decay
+        )
         return [optimizer], [scheduler]

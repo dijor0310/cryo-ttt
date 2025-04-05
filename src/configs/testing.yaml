@@ -12,8 +12,9 @@ wandb_project_name: cryo-ttt-ttt
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/memseg-dynunet-f2fd-chlamy-94d4d/epoch=543-val/dice_loss=0.46.ckpt
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/memseg-dynunet-f2fd-chlamy-94d4d/epoch=608-val/dice_loss=0.44.ckpt
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/memseg-dynunet-f2fd-chlamy-94d4d/epoch=678-val/dice_loss=0.43.ckpt
-ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/memseg-dynunet-f2fd-chlamy-94d4d/epoch=820-val/dice_loss=0.40.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/memseg-dynunet-f2fd-chlamy-94d4d/epoch=820-val/dice_loss=0.40.ckpt
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/memseg-dynunet-f2fd-chlamy-94d4d/epoch=797-val/dice_loss=0.38.ckpt
+ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-spinach-f2402/epoch=980-val/dice_loss=0.24.ckpt
 seed: 42 # random seed
 debug: False # debug mode, will use cpu only
 devices: [ 0 ] # gpu ids

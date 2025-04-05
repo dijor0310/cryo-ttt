@@ -1,9 +1,9 @@
 # Model type
 # model_name: memseg
-model_name: memdenoiseg
+model_name: memdenoiseg_ttt
 
 # Dataset config
-train_batch_size: 8
+train_batch_size: 4
 eval_batch_size: 1
 test_batch_size: 8
 dataset: memseg_f2fd
@@ -44,21 +44,25 @@ grad_clip_norm: null
 # Data related config
 root_dir:  /media/ssd3/diyor/membrain-seg-data/MemBrain_seg_training_data
 data_prefix: spinach
-normalize_data: True #(???)
+normalize_data: False #(???)
 patch_size: 160
 
 
 # Testing
 monai_inference: False
-inference_key: ["noisy_1", "noisy_2"]
+inference_key: ["image"]
 test_data_root_dir: /media/ssd3/diyor/patch-160-overlap-80
 test_tomo_names:
-  - rein/004/pixel-10
-  # - vpp/003/pixel-10
+  # - rein/004/pixel-10
+  - vpp/003/pixel-10
 
-test_entire_tomo: /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/tomograms_pixel_10/01122021_BrnoKrios_arctis_lam1_pos4.mrc
-test_entire_gt: /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/labels_pixel_10/01122021_BrnoKrios_arctis_lam1_pos4_memb.mrc
+# test_entire_tomo: /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/tomograms_pixel_10/01122021_BrnoKrios_arctis_lam1_pos4.mrc
+# test_entire_gt: /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/labels_pixel_10/01122021_BrnoKrios_arctis_lam1_pos4_memb.mrc
 
 
-# test_entire_tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized_pixel_10/TS_0003_trimmed.rec
-# test_entire_gt: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels_pixel_10/TS_0003_membranes_trimmed.mrc
+test_entire_tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized_pixel_10/TS_0003_trimmed.rec
+test_entire_gt: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels_pixel_10/TS_0003_membranes_trimmed.mrc
+
+# TTT
+masked_inference: True
+inference_iterations: 10
