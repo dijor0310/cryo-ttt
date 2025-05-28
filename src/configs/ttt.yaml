@@ -1,11 +1,20 @@
 # exp setting
-exp_name: memseg-dyn-f2fd-spinach-vpp-003-masked-10iter
+exp_name: memseg-dyn-f2fd-all-vpp-005
 wandb_project_name: cryo-ttt-ttt
-ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-spinach-f2402/epoch=980-val/dice_loss=0.24.ckpt
+# ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-spinach-0.25-3e112/epoch=978-val/dice_loss=0.20.ckpt
+# ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-spinach-0.5-df71c/epoch=976-val/dice_loss=0.20.ckpt
+# ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-spinach-0.75-9714f/epoch=959-val/dice_loss=0.20.ckpt
+# ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-spinach-0.125-bd1f8/epoch=826-val/dice_loss=0.18.ckpt
+# ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-cts-888f2/epoch=970-val/dice_loss=0.57.ckpt
+ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-all-39944/epoch=989-val/dice_loss=0.22.ckpt
+# ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-rory-c0587/epoch=957-val/dice_loss=0.37.ckpt
+# ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-polnet-f0f4b/epoch=963-val/dice_loss=0.24.ckpt
+# ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-spinach-f2402/epoch=980-val/dice_loss=0.24.ckpt
+# ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/memseg-dynunet-f2fd-chlamy-94d4d/epoch=820-val/dice_loss=0.40.ckpt
 # ckpt_path: null
 seed: 42 # random seed
 debug: False # debug mode, will use cpu only
-devices: [ 3 ] # gpu ids
+devices: [ 0, 1 ] # gpu ids
 
 # data related
 profiler: null
@@ -27,7 +36,7 @@ enable_progress_bar: True
 
 defaults:
   - _self_
-  - method: memseg
+  - method: memdenoiseg
   # - method: denoiseg_f2fd
   # - method: denoiseg_v2
   # - method: deepict_unet3d_ittt

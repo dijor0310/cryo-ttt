@@ -3,8 +3,14 @@
 # exp_name: def-vpp-001-norm-shuffle
 # exp_name: def-vpp-009-norm-v2
 # exp_name: denoiseg-GN-def-norm-p160
-exp_name: memseg-dynunet-f2fd-spinach
+exp_name: memseg-dynunet-oracle-masked
 wandb_project_name: cryo-ttt-v2
+# ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-spinach-0.25-3e112/epoch=978-val/dice_loss=0.20.ckpt
+# ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-spinach-0.5-df71c/epoch=976-val/dice_loss=0.20.ckpt
+# ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-spinach-0.75-9714f/epoch=959-val/dice_loss=0.20.ckpt
+# ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-spinach-0.125-bd1f8/epoch=826-val/dice_loss=0.18.ckpt
+# ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-spinach-f2402/epoch=980-val/dice_loss=0.24.ckpt
+
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-gn-vpp-norm_data-4919c/epoch=191-val/dice_loss=0.39.ckpt
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-gn-def-norm_data-95656/epoch=380-val/dice_loss=0.49.ckpt
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-gn-def-b6e1b/epoch=319-val/dice_loss=0.45.ckpt
@@ -32,10 +38,11 @@ wandb_project_name: cryo-ttt-v2
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-GN-vpp-norm-p160-cb6bb/epoch=157-val/dice_loss=0.52.ckpt
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/memseg-v0-f67f8/epoch=159-val/dice_loss=0.65.ckpt
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/memseg-v0-1ec3f/epoch=179-val/dice_loss=0.65.ckpt
-ckpt_path: null
+# ckpt_path: null
+ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-oracle-masked-553f6/epoch=351-val/dice_loss=0.25.ckpt
 seed: 42 # random seed
 debug: False # debug mode, will use cpu only
-devices: [ 1, 2 ] # gpu ids
+devices: [ 0 ] # gpu ids
 
 # data related
 profiler: null
@@ -57,7 +64,8 @@ enable_progress_bar: True
 
 defaults:
   - _self_
-  - method: memseg
+  - method: memdenoiseg
+  # - method: memseg
   # - method: denoiseg_f2fd
   # - method: denoiseg_v2
   # - method: deepict_unet3d_ittt

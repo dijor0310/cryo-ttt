@@ -70,9 +70,30 @@ tomo_list:
   # rein/004/pixel-10:
   #   tomo: /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/tomograms_pixel_10/01122021_BrnoKrios_arctis_lam1_pos4.mrc
   #   membrane: /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/labels_pixel_10/01122021_BrnoKrios_arctis_lam1_pos4_memb.mrc
-  vpp/003/pixel-10:
-    tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized_pixel_10/TS_0003_trimmed.rec
-    membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels_pixel_10/TS_0003_membranes_trimmed.mrc
+  
+  # vpp/003/pixel-10:
+  #   tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized_pixel_10/TS_0003_trimmed.rec
+  #   membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels_pixel_10/TS_0003_membranes_trimmed.mrc
+
+  vpp/002/pixel-10:
+    tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized_pixel_10/TS_0002_trimmed.rec
+    membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels_pixel_10/TS_0002_membranes_trimmed.mrc
+
+  vpp/005/pixel-10:
+    tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized_pixel_10/TS_0005_trimmed.rec
+    membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels_pixel_10/TS_0005_membranes_trimmed.mrc
+
+  def/034/pixel-10:
+    tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/tomograms_normalized_pixel_10/TS_034_trimmed.rec
+    membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/labels_pixel_10/TS_034_membranes_trimmed.mrc
+
+  def/037/pixel-10:
+    tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/tomograms_normalized_pixel_10/TS_037_trimmed.rec
+    membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/labels_pixel_10/TS_037_membranes_trimmed.mrc
+
+  def/041/pixel-10:
+    tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/tomograms_normalized_pixel_10/TS_041_trimmed.rec
+    membrane: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/labels_pixel_10/TS_041_membranes_trimmed.mrc
 
 dataset_path: /media/ssd3/diyor/patch-160-overlap-80
 patch_size: 160

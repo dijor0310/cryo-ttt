@@ -1,10 +1,13 @@
 wandb
-torch==2.0.1
-pytorch-lightning
+# torch==2.0.1
+pytorch-lightning==2.3
 hydra-core
 monai
-torchmetrics
+torchmetrics==1.6.3
 mrcfile
 pandas
 imageio
-torchvision
+nibabel
+h5py
+scipy
+# torchvision
