@@ -89,12 +89,12 @@ def ttt(cfg):
         dataloaders=val_loader,
         # ckpt_path=cfg.ckpt_path,
     )
-    trainer.fit(
-        model=model,
-        train_dataloaders=train_loader,
-        val_dataloaders=val_loader,
-        # ckpt_path=cfg.ckpt_path,
-    )
+    # trainer.fit(
+    #     model=model,
+    #     train_dataloaders=train_loader,
+    #     val_dataloaders=val_loader,
+    #     # ckpt_path=cfg.ckpt_path,
+    # )
 
 
 if __name__ == "__main__":

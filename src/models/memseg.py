@@ -7,6 +7,7 @@ from monai.metrics import DiceMetric
 from torch.nn.functional import sigmoid
 import wandb
 from utils.ddw_subtomos import reassemble_subtomos
+from utils.metrics import GlobalDiceMetric
 import torchvision.transforms.functional as FT
 from torchmetrics.functional import precision, recall
 
@@ -585,15 +586,16 @@ class MemSeg(L.LightningModule):
         self.dice_loss = MaskedDiceLoss(sigmoid=True)
         self.dice_score = DiceMetric()
 
-        self.val_start_coords = []
-        self.val_preds = []
-        self.val_gt = torch.Tensor(mrcfile.read(self.config.val_gt))[None, None, ...]
+        # self.val_start_coords = []
+        # self.val_preds = []
+        # self.val_gt = torch.Tensor(mrcfile.read(self.config.val_gt))[None, None, ...]
 
         # self.val_gt = self.val_gt.swapaxes(-1, -3)
 
     
     def training_step(self, batch, batch_idx):
-        x, y_out = batch["image"], batch["label"]
+        # x, y_out = batch["image"], batch["label"]
+        x, y_out = batch["noisy_1"], batch["label"]
         batch_size = x.shape[0]
 
         y_hat = self.model(x)
@@ -619,17 +621,6 @@ class MemSeg(L.LightningModule):
             sync_dist=True,
         )
 
-        # # Compute Dice loss separately for each batch element
-        # dice_loss = torch.zeros((batch_size,), device=y_hat.device)
-
-        # # TODO (Diyor): I believe this can be unrolled ??
-        # for batch_idx in range(y_hat.shape[0]):
-        #     dice_loss[batch_idx] = self.dice_loss(
-        #         y_hat[batch_idx].unsqueeze(0),
-        #         y_out[batch_idx].unsqueeze(0),
-        #         mask[batch_idx].unsqueeze(0),
-        #     )
-        # dice_loss_1 = self.dice_loss(y_hat, y_out, mask)
         self.log(
             "train/dice_loss",
             # dice_loss_1, 
@@ -641,29 +632,6 @@ class MemSeg(L.LightningModule):
             sync_dist=True,
         )
 
-        # dice_loss = torch.zeros((batch_size, ), device=y_out.device)
-
-        # # TODO (Diyor): I believe this can be unrolled ??
-        # for batch_idx in range(y_out.shape[0]):
-        #     dice_loss[batch_idx] = self.dice_loss(
-        #         y_hat[batch_idx].unsqueeze(0),
-        #         y_out[batch_idx].unsqueeze(0),
-        #         mask[batch_idx].unsqueeze(0),
-        #     )
-
-        # dice_loss = dice_loss.mean()
-
-        # self.log(
-        #     "train/dice_loss_backup",
-        #     dice_loss, 
-        #     # dice_loss.mean(),
-        #     on_step=False,
-        #     on_epoch=True,
-        #     batch_size=batch_size,
-        #     sync_dist=True,
-        # )
-
-        # assert dice_loss == dice_loss_1, f"1: {dice_loss_1}  0: {dice_loss}"
         self.log(
             "train/ce_loss",
             bce_loss, 
@@ -677,7 +645,8 @@ class MemSeg(L.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        x, y_out = batch["image"], batch["label"]
+        # x, y_out = batch["image"], batch["label"]
+        x, y_out = batch["noisy_1"], batch["label"]
 
         batch_size = x.shape[0]
 
@@ -703,17 +672,6 @@ class MemSeg(L.LightningModule):
             batch_size=batch_size,
             sync_dist=True,
         )
-
-        # # Compute Dice loss separately for each batch element
-        # dice_loss = torch.zeros((batch_size,), device=y_hat.device)
-
-        # # TODO (Diyor): I believe this can be unrolled ??
-        # for batch_idx in range(y_hat.shape[0]):
-        #     dice_loss[batch_idx] = self.dice_loss(
-        #         y_hat[batch_idx].unsqueeze(0),
-        #         y_out[batch_idx].unsqueeze(0),
-        #         mask[batch_idx].unsqueeze(0),
-        #     )
 
         self.log(
             "val/dice_loss",
@@ -745,31 +703,31 @@ class MemSeg(L.LightningModule):
                 self.val_preds.extend(torch.unbind(gathered_y_hats.cpu().sigmoid().flatten(end_dim=1), dim=0))
 
 
-    def on_validation_epoch_end(self):
+    # def on_validation_epoch_end(self):
 
-        if self.trainer.global_rank != 0:
-            return
+    #     if self.trainer.global_rank != 0:
+    #         return
         
-        reassembled_pred = reassemble_subtomos(
-            subtomos=self.val_preds,
-            subtomo_start_coords=self.val_start_coords,
-            subtomo_overlap=80,
-            crop_to_size=self.val_gt.shape[2:],
-        )
+    #     reassembled_pred = reassemble_subtomos(
+    #         subtomos=self.val_preds,
+    #         subtomo_start_coords=self.val_start_coords,
+    #         subtomo_overlap=80,
+    #         crop_to_size=self.val_gt.shape[2:],
+    #     )
 
-        reassembled_pred_binary = (reassembled_pred[None, None, ...] > 0.5).to(torch.uint8)
-        dice_score = self.dice_score(reassembled_pred_binary, self.val_gt)
+    #     reassembled_pred_binary = (reassembled_pred[None, None, ...] > 0.5).to(torch.uint8)
+    #     dice_score = self.dice_score(reassembled_pred_binary, self.val_gt)
 
-        self.logger.experiment.log({
-            "val/macro_dice": dice_score,
-            "val/macro_recall": binary_recall(reassembled_pred_binary, self.val_gt),
-            "val/macro_precision": binary_precision(reassembled_pred_binary, self.val_gt),
-            "val/rsm_pred": wandb.Image(FT.to_pil_image(normalize_min_max(reassembled_pred_binary.squeeze().sum(dim=0)).to(torch.uint8), mode="L")),
-            "epoch": self.current_epoch,
-        })
+    #     self.logger.experiment.log({
+    #         "val/macro_dice": dice_score,
+    #         "val/macro_recall": binary_recall(reassembled_pred_binary, self.val_gt),
+    #         "val/macro_precision": binary_precision(reassembled_pred_binary, self.val_gt),
+    #         "val/rsm_pred": wandb.Image(FT.to_pil_image(normalize_min_max(reassembled_pred_binary.squeeze().sum(dim=0)).to(torch.uint8), mode="L")),
+    #         "epoch": self.current_epoch,
+    #     })
         
-        self.val_start_coords = []
-        self.val_preds = []
+    #     self.val_start_coords = []
+    #     self.val_preds = []
 
     def on_test_start(self):
         if self.trainer.global_rank != 0:
@@ -879,6 +837,8 @@ class MemDenoiseg(L.LightningModule):
 
         self.dice_loss = MaskedDiceLoss(sigmoid=True)
         self.dice_score = DiceMetric()
+
+        self.global_dice_score = GlobalDiceMetric()
 
         self.val_start_coords = []
         self.val_preds = []
@@ -997,6 +957,8 @@ class MemDenoiseg(L.LightningModule):
 
         # acc = (((sigmoid(y_hat) > 0.5).int() == y_out) * mask).sum() / mask.sum()
         acc = self.masked_accuracy(y_hat, y_out, (y_out != 2.0))
+
+        self.global_dice_score.update(y_hat, y_out)
         self.log(
             "val/accuracy",
             acc,
@@ -1054,6 +1016,10 @@ class MemDenoiseg(L.LightningModule):
 
     def on_validation_epoch_end(self):
 
+        self.logger.experiment.log({
+            "val/global_dice": self.global_dice_score.compute(),
+        })
+        
         if not self.val_preds or self.trainer.global_rank != 0:
             return
         
@@ -1292,6 +1258,13 @@ class MemDenoisegTTT(MemDenoiseg):
             lr=self.learning_rate,
             momentum=0.9,
         )
+
+        # optimizer = torch.optim.AdamW(
+        #     self.model.parameters(),
+        #     lr=self.learning_rate,
+        #     weight_decay=0,
+        # )
+
         scheduler = torch.optim.lr_scheduler.ExponentialLR(
             optimizer=optimizer,
             gamma=self.config.gamma_decay

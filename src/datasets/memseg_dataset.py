@@ -16,12 +16,11 @@ class MemSegDataset(Dataset):
         self.is_test = is_test
         self.is_validation = is_validation
 
-        if is_test or is_validation:
+        if is_test:
             self.root_dir = Path(config.test_data_root_dir)
             self.tomo_names = config.test_tomo_names
             self.config = config
             self.image_filenames = [file for tomo_name in self.tomo_names for file in self.root_dir.joinpath(tomo_name).rglob("*.pkl")]
-
             return 
         
         self.root_dir = config.root_dir
@@ -29,12 +28,12 @@ class MemSegDataset(Dataset):
         if is_validation:
             self.image_dir = os.path.join(config.root_dir, "imagesVal")
             self.label_dir = os.path.join(config.root_dir, "labelsVal")
+            self.transforms = None
 
         else:
             self.image_dir = os.path.join(config.root_dir, "imagesTr")
             self.label_dir = os.path.join(config.root_dir, "labelsTr")
-
-            self.transforms = get_training_transforms(prob_to_one=False)
+            self.transforms = get_training_f2fd_transforms(prob_to_one=False)
 
         self.image_filenames = sorted([f for f in os.listdir(self.image_dir) if f.endswith(".nii.gz")])
         self.label_filenames = [f.rsplit("_", 1)[0] + ".nii.gz" for f in self.image_filenames]
@@ -42,20 +41,20 @@ class MemSegDataset(Dataset):
     def __len__(self):
         return len(self.image_filenames)
     
-    def load_nii(self, filepath):
+    def load_nii(self, filepath, dtype):
         nii_img = nib.load(filepath)
-        return np.array(nii_img.get_fdata(), dtype=np.float32)
+        return np.array(nii_img.get_fdata(), dtype=dtype)
     
     def __getitem__(self, idx):
         
-        if self.is_test or self.is_validation:
+        if self.is_test:
             return self.get_test_sample(idx)
 
         img_path = os.path.join(self.image_dir, self.image_filenames[idx])
         label_path = os.path.join(self.label_dir, self.label_filenames[idx])
         
-        image = self.load_nii(img_path)
-        label = self.load_nii(label_path)
+        image = self.load_nii(img_path, dtype=np.float32)
+        label = self.load_nii(label_path, dtype=np.uint8)
 
         if self.config.normalize_data:
             image = (image - image.mean()) / (image.std() + 1e-8)
@@ -64,7 +63,6 @@ class MemSegDataset(Dataset):
             "image": image[np.newaxis, ...],
             "label": label[np.newaxis, ...]
         }
-
 
         sample = self.get_random_crop(sample)
 
@@ -227,18 +225,31 @@ class MemSegF2FDDataset(Dataset):
         self.image_dir = os.path.join(config.root_dir, "imagesTr")
         self.label_dir = os.path.join(config.root_dir, "labelsTr")
 
-        self.image_filenames = sorted([f for f in os.listdir(self.image_dir) if f.endswith(".nii.gz") and f.startswith(config.data_prefix)])
+        self.image_filenames = sorted([f for f in os.listdir(self.image_dir) if f.endswith(".nii.gz") and f.startswith(tuple(config.data_prefix))])
         self.label_filenames = [f.rsplit("_", 1)[0] + ".nii.gz" for f in self.image_filenames]
 
-        delimiter = int(0.2 * len(self.image_filenames))
+        # for scaling law!! 
+        # num_samples = len(self.image_filenames)
+        # portion = int(config.dataset_portion * num_samples)
+        # self.image_filenames = self.image_filenames[:portion]
+        # self.label_filenames = self.label_filenames[:portion]
+
+        # delimiter = int(0.2 * len(self.image_filenames))
         if self.is_validation:
-            self.image_filenames = self.image_filenames[:delimiter]
-            self.label_filenames = self.label_filenames[:delimiter]
+
+            self.image_dir = os.path.join(config.root_dir, "imagesVal")
+            self.label_dir = os.path.join(config.root_dir, "labelsVal")
+
+            self.image_filenames = sorted([f for f in os.listdir(self.image_dir) if f.endswith(".nii.gz") and f.startswith(tuple(config.data_prefix))])
+            self.label_filenames = [f.rsplit("_", 1)[0] + ".nii.gz" for f in self.image_filenames]
+
+            # self.image_filenames = self.image_filenames[:delimiter]
+            # self.label_filenames = self.label_filenames[:delimiter]
         
             self.transforms = None
         else:
-            self.image_filenames = self.image_filenames[delimiter:]
-            self.label_filenames = self.label_filenames[delimiter:]
+            # self.image_filenames = self.image_filenames[delimiter:]
+            # self.label_filenames = self.label_filenames[delimiter:]
 
             # self.transforms = get_training_transforms(prob_to_one=False)
             self.transforms = get_training_f2fd_transforms(prob_to_one=False)

@@ -6,11 +6,11 @@
 # RAW_LABEL=/mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/labels/01122021_BrnoKrios_arctis_lam1_pos4_memb.mrc
 # OUTPUT_LABEL=/mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/labels_pixel_10/01122021_BrnoKrios_arctis_lam1_pos4_memb.mrc
 
-RAW_TOMO=/mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized/TS_0003_trimmed.rec
-OUTPUT_TOMO=/mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized_pixel_10/TS_0003_trimmed.rec
+RAW_TOMO=/mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/tomograms_normalized/TS_041_trimmed.rec
+OUTPUT_TOMO=/mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/tomograms_normalized_pixel_10/TS_041_trimmed.rec
 
-RAW_LABEL=/mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels/TS_0003_membranes_trimmed.mrc
-OUTPUT_LABEL=/mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels_pixel_10/TS_0003_membranes_trimmed.mrc
+RAW_LABEL=/mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/labels/TS_041_membranes_trimmed.mrc
+OUTPUT_LABEL=/mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/labels_pixel_10/TS_041_membranes_trimmed.mrc
 
 INPUT_PX_SIZE=13.48
 OUTPUT_PX_SIZE=10.0
