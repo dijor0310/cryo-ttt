@@ -56,34 +56,16 @@ class Denoiseg(L.LightningModule):
         self.val_start_coords = []
         self.val_preds = []
         self.val_gt = torch.Tensor(mrcfile.read(self.config.val_gt))[None, None, ...]
-
-    def normalize(self, x):
-
-        mean = x.mean(dim=(-4, -3, -2, -1), keepdim=True)
-        std = x.std(dim=(-4, -3, -2 , -1), keepdim=True) + 1e-6
-        return (x - mean) / std, mean, std
-
-    def denormalize(self, x, mean, std):
-        return std * x + mean
     
     def masked_rec_loss(self, pred, target, mask):
         masked_loss = self.reconstruction_loss(pred, target) * mask
-
         return masked_loss.sum() / mask.sum()
 
     def training_step(self, batch, batch_idx):
         x, y_out = batch["image"], batch["label"]
         x_out, mask = batch["unmasked_image"], batch["mask"]
 
-        # ### Normalize
-        # x, mean, std = self.normalize(x)
-        # ###
-
         y_hat, x_hat = self.model(x)
-
-        # ### Denormalize
-        # x_hat = self.denormalize(x_hat, mean, std)
-        # ###
 
         denoising_loss = self.masked_rec_loss(x_hat, x_out, mask)
         seg_loss = self.criterion(y_hat, y_out)
@@ -104,23 +86,13 @@ class Denoiseg(L.LightningModule):
             sync_dist=True,
         )
 
-
         return loss
 
     def validation_step(self, batch, batch_idx):
         x, y_out = batch["image"], batch["label"]
         x_out, mask = batch["unmasked_image"], batch["mask"]
 
-
-        # ### Normalize
-        # x, mean, std = self.normalize(x)
-        # ###
-
         y_hat, x_hat = self.model(x)
-
-        # ### Denormalize
-        # x_hat = self.denormalize(x_hat, mean, std)
-        # ###
 
         denoising_loss = self.masked_rec_loss(x_hat, x_out, mask)
         seg_loss = self.criterion(y_hat, y_out)
@@ -175,18 +147,9 @@ class Denoiseg(L.LightningModule):
             "val/rsm_pred": wandb.Image(FT.to_pil_image(normalize_min_max(reassembled_pred_binary.squeeze().sum(dim=0)).to(torch.uint8), mode="L")),
             "epoch": self.current_epoch,
         })
-
-        # self.log(
-        #     "val/macro_dice",
-        #     dice_score,
-        #     on_step=False,
-        #     on_epoch=True,
-        # )
-
         
         self.val_start_coords = []
         self.val_preds = []
-        # return super().on_validation_epoch_end()
     
     def test_step(self, batch, batch_idx):
         x, y = batch["unmasked_image"], batch["label"]
