@@ -222,37 +222,30 @@ class MemSegF2FDDataset(Dataset):
         self.root_dir = config.root_dir
         self.config = config
 
-        self.image_dir = os.path.join(config.root_dir, "imagesTr")
-        self.label_dir = os.path.join(config.root_dir, "labelsTr")
-
-        self.image_filenames = sorted([f for f in os.listdir(self.image_dir) if f.endswith(".nii.gz") and f.startswith(tuple(config.data_prefix))])
-        self.label_filenames = [f.rsplit("_", 1)[0] + ".nii.gz" for f in self.image_filenames]
-
-        # for scaling law!! 
-        # num_samples = len(self.image_filenames)
-        # portion = int(config.dataset_portion * num_samples)
-        # self.image_filenames = self.image_filenames[:portion]
-        # self.label_filenames = self.label_filenames[:portion]
-
-        # delimiter = int(0.2 * len(self.image_filenames))
         if self.is_validation:
+            self.image_dir = os.path.join(config.root_dir, "imagesTr")
+            self.label_dir = os.path.join(config.root_dir, "labelsTr")
 
-            self.image_dir = os.path.join(config.root_dir, "imagesVal")
-            self.label_dir = os.path.join(config.root_dir, "labelsVal")
-
-            self.image_filenames = sorted([f for f in os.listdir(self.image_dir) if f.endswith(".nii.gz") and f.startswith(tuple(config.data_prefix))])
+            # self.image_filenames = sorted([
+            #     f for f in os.listdir(self.image_dir) if f.endswith(".nii.gz")
+            #     and f.startswith(tuple(config.data_prefix))])
+            self.image_filenames = self.config.val_tomo_names
             self.label_filenames = [f.rsplit("_", 1)[0] + ".nii.gz" for f in self.image_filenames]
-
-            # self.image_filenames = self.image_filenames[:delimiter]
-            # self.label_filenames = self.label_filenames[:delimiter]
         
             self.transforms = None
         else:
-            # self.image_filenames = self.image_filenames[delimiter:]
-            # self.label_filenames = self.label_filenames[delimiter:]
+            self.image_dir = os.path.join(config.root_dir, "imagesTr")
+            self.label_dir = os.path.join(config.root_dir, "labelsTr")
 
-            # self.transforms = get_training_transforms(prob_to_one=False)
-            self.transforms = get_training_f2fd_transforms(prob_to_one=False)
+            # self.image_filenames = sorted([f for f in os.listdir(self.image_dir) if f.endswith(".nii.gz") and f.startswith(tuple(config.data_prefix))])
+            self.image_filenames = self.config.train_tomo_names
+            self.label_filenames = [f.rsplit("_", 1)[0] + ".nii.gz" for f in self.image_filenames]
+
+            if self.config.disable_train_transforms:
+                self.transforms = None
+            else:
+                self.transforms = get_training_f2fd_transforms(prob_to_one=False)
+            # self.transforms = None
         
     def __len__(self):
         return len(self.image_filenames)
@@ -276,7 +269,10 @@ class MemSegF2FDDataset(Dataset):
             "label": label[np.newaxis, ...]
         }
 
-        sample = self.get_random_crop(sample)
+        if self.is_validation:
+            sample = self.get_center_crop(sample)
+        else:
+            sample = self.get_random_crop(sample)
 
         if self.transforms:
             sample = self.transforms(sample)
@@ -379,6 +375,110 @@ class MemSegF2FDDataset(Dataset):
         x_start = np.random.randint(0, x - x_crop)
         y_start = np.random.randint(0, y - y_crop)
         z_start = np.random.randint(0, z - z_crop)
+        img = img[
+            :,
+            x_start : x_start + x_crop,
+            y_start : y_start + y_crop,
+            z_start : z_start + z_crop,
+        ]
+        label = label[
+            :,
+            x_start : x_start + x_crop,
+            y_start : y_start + y_crop,
+            z_start : z_start + z_crop,
+        ]
+
+        assert (
+            img.shape[1] == self.config.patch_size
+            and img.shape[2] == self.config.patch_size
+            and img.shape[3] == self.config.patch_size
+        ), f"Image shape is {img.shape} instead of {self.config.patch_size}"
+        return {"image": img, "label": label}
+
+    def get_center_crop(self, idx_dict: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
+        """
+        Returns a center crop from the image-label pair.
+
+        Parameters
+        ----------
+        idx_dict : Dict[str, np.ndarray]
+            A dictionary containing an image and its corresponding label.
+
+        Returns
+        -------
+        Dict[str, np.ndarray]
+            A dictionary containing a center crop from the image and its corresponding
+            label.
+        """
+        img, label = idx_dict["image"], idx_dict["label"]
+        x, y, z = img.shape[1:]
+
+        if x <= self.config.patch_size or y <= self.config.patch_size or z <= self.config.patch_size:
+            # pad with 2s on both sides
+            pad_x = max(self.config.patch_size - x, 0)
+            pad_y = max(self.config.patch_size - y, 0)
+            pad_z = max(self.config.patch_size - z, 0)
+            img = np.pad(
+                img,
+                (
+                    (0, 0),
+                    (pad_x // 2, pad_x // 2),
+                    (pad_y // 2, pad_y // 2),
+                    (pad_z // 2, pad_z // 2),
+                ),
+                mode="constant",
+                constant_values=0,
+            )
+            label = np.pad(
+                label,
+                (
+                    (0, 0),
+                    (pad_x // 2, pad_x // 2),
+                    (pad_y // 2, pad_y // 2),
+                    (pad_z // 2, pad_z // 2),
+                ),
+                mode="constant",
+                constant_values=2,
+            )
+            # make sure there was no rounding issue
+            if (
+                img.shape[1] < self.config.patch_size
+                or img.shape[2] < self.config.patch_size
+                or img.shape[3] < self.config.patch_size
+            ):
+                img = np.pad(
+                    img,
+                    (
+                        (0, 0),
+                        (0, max(self.config.patch_size - img.shape[1], 0)),
+                        (0, max(self.config.patch_size - img.shape[2], 0)),
+                        (0, max(self.config.patch_size - img.shape[3], 0)),
+                    ),
+                    mode="constant",
+                    constant_values=0,
+                )
+                label = np.pad(
+                    label,
+                    (
+                        (0, 0),
+                        (0, max(self.config.patch_size - label.shape[1], 0)),
+                        (0, max(self.config.patch_size - label.shape[2], 0)),
+                        (0, max(self.config.patch_size - label.shape[3], 0)),
+                    ),
+                    mode="constant",
+                    constant_values=2,
+                )
+            assert (
+                img.shape[1] == self.config.patch_size
+                and img.shape[2] == self.config.patch_size
+                and img.shape[3] == self.config.patch_size
+            ), f"Image shape is {img.shape} instead of {self.config.patch_size}"
+            return {"image": img, "label": label}
+
+        x_crop, y_crop, z_crop = self.config.patch_size, self.config.patch_size, self.config.patch_size
+        x_start = (x - x_crop) // 2
+        y_start = (y - y_crop) // 2
+        z_start = (z - z_crop) // 2
         img = img[
             :,
             x_start : x_start + x_crop,

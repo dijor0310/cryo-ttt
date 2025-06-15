@@ -13,7 +13,7 @@ from torchmetrics.functional import precision, recall
 from torchmetrics.functional.classification import binary_confusion_matrix, binary_precision, binary_recall
 import mrcfile
 from torch.nn.functional import binary_cross_entropy_with_logits
-from models import UNet3D
+from models.unet3d import UNet3D
 
 def normalize_min_max(image):
     return (image - image.min()) * 255 / (image.max() - image.min())

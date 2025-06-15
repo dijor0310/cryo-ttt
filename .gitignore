@@ -176,3 +176,4 @@ ttt_ckpt
 lightning_logs
 plots
 *.out
+nohup

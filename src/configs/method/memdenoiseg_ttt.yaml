@@ -1,0 +1,65 @@
+# Model type
+# model_name: memdenoiseg
+model_name: memdenoiseg_ttt_subset
+# model_name: memdenoiseg_ttt
+
+# Dataset config
+# train_batch_size: 8
+train_batch_size: 2
+eval_batch_size: 1
+test_batch_size: 2
+dataset: memseg_f2fd
+# dataset: memseg
+
+# Simple UNet
+depth: 4
+initial_features: 16 # (8)
+encoder_dropout: 0.0
+decoder_dropout: 0.1
+BN: instance_norm
+elu: False
+
+# nnUNet
+dynunet:
+  enable: True
+  kernel_size: [3, 3, 3, 3, 3, 3]
+  strides: [1, 2, 2, 2, 2, 2]
+  upsample_kernel_size: [1, 2, 2, 2, 2, 2]
+  filters: [32, 64, 128, 256, 512, 1024]
+  res_block: True
+
+
+# F2FD masking
+bernoulli_mask_ratio: 0.5
+phase_inversion_ratio: 0.1
+min_mask_radius: 0.05
+max_mask_radius: 0.1
+
+# Optimizer config
+# learning_rate: 1e-6
+# learning_rate: 1e-4
+learning_rate: 0.003
+# learning_rate: 1e-2
+max_epochs: 1000
+gamma_decay: 1.0
+grad_clip_norm: null
+
+# Data related config
+root_dir:  /media/ssd3/diyor/membrain-seg-data/MemBrain_seg_training_data
+data_prefix: [""]
+normalize_data: True
+patch_size: 160
+
+train_tomo_names:
+  - spinach_tomo17_patch009_split0.nii.gz
+  - spinach_tomo02_patch006_raw_split0.nii.gz
+  - spinach_tomo02_patch020_raw_split0.nii.gz
+  - spinach_tomo32_patch004_split0.nii.gz
+  - spinach_tomo10_patch009_split0.nii.gz
+val_tomo_names: ${train_tomo_names}
+
+disable_train_transforms: True
+
+# TTT
+masked_inference: False
+inference_iterations: 1

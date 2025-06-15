@@ -1,31 +1,33 @@
 # exp setting
-exp_name: memseg-dyn-f2fd-all-vpp-005
+# exp_name: memseg-dyn-f2fd-all-vpp-005
+exp_name: memseg-f2fd-subset3-rory-unmasked-adam-no-trans-1e-6
 wandb_project_name: cryo-ttt-ttt
 # ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-spinach-0.25-3e112/epoch=978-val/dice_loss=0.20.ckpt
 # ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-spinach-0.5-df71c/epoch=976-val/dice_loss=0.20.ckpt
 # ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-spinach-0.75-9714f/epoch=959-val/dice_loss=0.20.ckpt
 # ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-spinach-0.125-bd1f8/epoch=826-val/dice_loss=0.18.ckpt
 # ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-cts-888f2/epoch=970-val/dice_loss=0.57.ckpt
-ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-all-39944/epoch=989-val/dice_loss=0.22.ckpt
+# ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-all-39944/epoch=989-val/dice_loss=0.22.ckpt
 # ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-rory-c0587/epoch=957-val/dice_loss=0.37.ckpt
 # ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-polnet-f0f4b/epoch=963-val/dice_loss=0.24.ckpt
 # ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-spinach-f2402/epoch=980-val/dice_loss=0.24.ckpt
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/memseg-dynunet-f2fd-chlamy-94d4d/epoch=820-val/dice_loss=0.40.ckpt
+ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-f2fd-spinach-subset3-49185/epoch=994-val/dice_loss=0.32.ckpt
 # ckpt_path: null
 seed: 42 # random seed
 debug: False # debug mode, will use cpu only
-devices: [ 0, 1 ] # gpu ids
+devices: [ 3 ] # gpu ids
 
 # data related
 profiler: null
 strategy: ddp # if ddp, then disable shuffle
 shuffle: True
-train_load_num_workers: 32 # number of workers for loading data (8)
-val_load_num_workers: 32 #(8)
+train_load_num_workers: 16 # number of workers for loading data (8)
+val_load_num_workers: 16 #(8)
 pin_memory: False
 persistent_workers: False
 
-accumulate_grad_batches: 4
+accumulate_grad_batches: 1
 gradient_clip_val: null
 
 # (wandb) logging
@@ -36,7 +38,7 @@ enable_progress_bar: True
 
 defaults:
   - _self_
-  - method: memdenoiseg
+  - method: memdenoiseg_ttt
   # - method: denoiseg_f2fd
   # - method: denoiseg_v2
   # - method: deepict_unet3d_ittt
