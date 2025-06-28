@@ -4,7 +4,7 @@
 # exp_name: def-vpp-009-norm-v2
 # exp_name: denoiseg-GN-def-norm-p160
 # exp_name: memseg-dynunet-oracle-masked
-exp_name: memseg-f2fd-rory-subset19
+exp_name: memseg-f2fd-synthetic-subset16-val-spinach
 wandb_project_name: cryo-ttt-v2
 # ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-spinach-0.25-3e112/epoch=978-val/dice_loss=0.20.ckpt
 # ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-spinach-0.5-df71c/epoch=976-val/dice_loss=0.20.ckpt
@@ -39,11 +39,12 @@ wandb_project_name: cryo-ttt-v2
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-GN-vpp-norm-p160-cb6bb/epoch=157-val/dice_loss=0.52.ckpt
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/memseg-v0-f67f8/epoch=159-val/dice_loss=0.65.ckpt
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/memseg-v0-1ec3f/epoch=179-val/dice_loss=0.65.ckpt
-ckpt_path: null
+ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-f2fd-synthetic-subset16-87633/epoch=765-val/dice_loss=0.46.ckpt
+# ckpt_path: null
 # ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-oracle-masked-553f6/epoch=351-val/dice_loss=0.25.ckpt
 seed: 42 # random seed
 debug: False # debug mode, will use cpu only
-devices: [ 1 ] # gpu ids
+devices: [ 3 ] # gpu ids
 
 # data related
 profiler: null

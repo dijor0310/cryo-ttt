@@ -626,11 +626,12 @@ class MemDenoisegTTTSubset(MemDenoiseg):
             weight_decay=1e-4,
         )
 
-        # optimizer = torch.optim.SGD(
-        #     self.model.parameters(),
-        #     lr=self.learning_rate,
-        #     momentum=0.9,
-        # )
+        if self.config.use_sgd:
+            optimizer = torch.optim.SGD(
+                self.model.parameters(),
+                lr=self.learning_rate,
+                momentum=0.9,
+            )
 
         return optimizer
         
