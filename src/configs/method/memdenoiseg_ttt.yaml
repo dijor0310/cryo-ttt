@@ -38,10 +38,11 @@ max_mask_radius: 0.1
 # Optimizer config
 # learning_rate: 1e-6
 # learning_rate: 2e-6
-learning_rate: 1e-3
+# learning_rate: 0.003
+# learning_rate: 1e-3
 # learning_rate: 1e-4
 # learning_rate: 0.003
-# learning_rate: 1e-2
+learning_rate: 1e-2
 max_epochs: 1000
 # max_epochs: 0
 gamma_decay: 1.0
@@ -356,7 +357,7 @@ train_tomo_names:
 val_tomo_names: ${train_tomo_names}
 
 disable_train_transforms: True
-use_sgd: False
+use_sgd: True
 
 # TTT
 masked_inference: False

@@ -11,7 +11,9 @@ To install `uv`, please refer to their [official installation guide](https://git
 After installing `uv`, install all dependencies with:
 
 ```bash
-uv install
+uv sync --all-extras --no-install-project
+
+# Activate the virtual env
 source .venv/bin/activate
 ```
 

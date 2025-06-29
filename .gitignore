@@ -177,3 +177,4 @@ lightning_logs
 plots
 *.out
 nohup
+cache
