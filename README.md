@@ -1,4 +1,4 @@
-# Test-time training for Cryo-ET tomogram segmentation 🧊
+# Denoising test-time training for cryo-ET membrane segmentation 🧊 🦠
 
 This repository contains the implementation of denoising test-time training for membrane segmentation in cryo-electron tomography (cryo-ET). The goal is to improve segmentation performance on noisy tomograms by adapting the model at test time.
 
@@ -52,7 +52,7 @@ You can adjust hyperparameters and paths in the `configs/train_config.yaml` file
 
 The trained model checkpoints will be saved in the `checkpoints/` directory.
 
-## Test-time training 🔬
+## Test-time training 📈
 
 Once the base model is trained, you can perform denoising test-time training (TTT) to adapt the model to each new test tomogram:
 
@@ -77,7 +77,7 @@ If you use this code for your research, please cite:
 }
 ```
 
-## License 📜
+## License ⚖️
 
 This project is licensed under the MIT License. See `LICENSE` for details.
 
