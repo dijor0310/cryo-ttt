@@ -1,6 +1,6 @@
 # Model type
 # model_name: memdenoiseg
-model_name: memdenoiseg_ttt_subset
+model_name: memdenoiseg_tent_subset
 # model_name: memdenoiseg_ttt
 
 # Dataset config

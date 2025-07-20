@@ -2,7 +2,7 @@
 # exp_name: memseg-dyn-f2fd-all-vpp-005
 # exp_name: memseg-f2fd-subset19-subset17-unmasked-adam-no-trans-1e-6-b4
 # exp_name: memseg-f2fd-spinach-nonspinach-unmasked-sgd-1e-2-no-trans-b16
-exp_name: memseg-f2fd-spinach-nonspinach-unmasked-adam-no-trans-1e-6-b4
+exp_name: memseg-f2fd-spinach-nonspinach-unmasked-adam-no-trans-1e-6-b4-TENT-IN+TTT
 wandb_project_name: cryo-ttt-ttt
 # ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-spinach-0.25-3e112/epoch=978-val/dice_loss=0.20.ckpt
 # ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-spinach-0.5-df71c/epoch=976-val/dice_loss=0.20.ckpt
@@ -12,8 +12,8 @@ wandb_project_name: cryo-ttt-ttt
 # ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-all-39944/epoch=989-val/dice_loss=0.22.ckpt
 # ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-rory-c0587/epoch=957-val/dice_loss=0.37.ckpt
 # ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-polnet-f0f4b/epoch=963-val/dice_loss=0.24.ckpt
-# ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-spinach-f2402/epoch=980-val/dice_loss=0.24.ckpt
-ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-f2fd-spinach-nonspinach-unmasked-adam-no-trans-1e-6-b4-dbff5/epoch=604-train/dice_loss=0.67.ckpt
+ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-spinach-f2402/epoch=980-val/dice_loss=0.24.ckpt
+# ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-f2fd-spinach-nonspinach-unmasked-adam-no-trans-1e-6-b4-dbff5/epoch=604-train/dice_loss=0.67.ckpt
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/memseg-dynunet-f2fd-chlamy-94d4d/epoch=820-val/dice_loss=0.40.ckpt
 # ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-f2fd-spinach-subset3-49185/epoch=994-val/dice_loss=0.32.ckpt
 # ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-f2fd-synthetic-subset16-87633/epoch=927-val/dice_loss=0.45.ckpt
@@ -22,7 +22,7 @@ ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-f2fd-spinach-nonspi
 # ckpt_path: null
 seed: 42 # random seed
 debug: False # debug mode, will use cpu only
-devices: [ 0 ] # gpu ids
+devices: [ 1 ] # gpu ids
 
 # data related
 profiler: null
@@ -33,7 +33,7 @@ val_load_num_workers: 16 #(8)
 pin_memory: False
 persistent_workers: False
 
-accumulate_grad_batches: 4
+accumulate_grad_batches: 1
 gradient_clip_val: null
 
 # (wandb) logging
@@ -44,7 +44,8 @@ enable_progress_bar: True
 
 defaults:
   - _self_
-  - method: memdenoiseg_ttt
+  - method: memdenoiseg_tent
+  # - method: memdenoiseg_ttt
   # - method: denoiseg_f2fd
   # - method: denoiseg_v2
   # - method: deepict_unet3d_ittt
