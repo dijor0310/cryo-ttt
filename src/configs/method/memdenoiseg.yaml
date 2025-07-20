@@ -6,7 +6,7 @@ model_name: memdenoiseg
 
 # Dataset config
 # train_batch_size: 8
-train_batch_size: 2
+train_batch_size: 8
 eval_batch_size: 1
 test_batch_size: 2
 dataset: memseg_f2fd
@@ -44,7 +44,8 @@ max_mask_radius: 0.1
 # learning_rate: 1e-4
 learning_rate: 0.003
 # learning_rate: 1e-2
-max_epochs: 1000
+# max_epochs: 1000
+max_steps: 5000
 gamma_decay: 1.0
 grad_clip_norm: null
 
@@ -83,41 +84,43 @@ disable_train_transforms: False
 #   - rory_tomo33b_patch0_raw_split0_0000.nii.gz
 #   - rory_tomo35b_patch0_raw_split0_0000.nii.gz
 
-val_tomo_names:
-  - spinach_tomo17_patch009_split0_0000.nii.gz
-  - spinach_tomo02_patch006_raw_split0_0000.nii.gz
-  - spinach_tomo02_patch020_raw_split0_0000.nii.gz
-  - spinach_tomo32_patch004_split0_0000.nii.gz
-  - spinach_tomo10_patch009_split0_0000.nii.gz
+val_tomo_names: ???
+train_tomo_names: ???
+# val_tomo_names:
+#   - spinach_tomo17_patch009_split0_0000.nii.gz
+#   - spinach_tomo02_patch006_raw_split0_0000.nii.gz
+#   - spinach_tomo02_patch020_raw_split0_0000.nii.gz
+#   - spinach_tomo32_patch004_split0_0000.nii.gz
+#   - spinach_tomo10_patch009_split0_0000.nii.gz
 
-train_tomo_names:
-  - cts_patch015_split0_0000.nii.gz
-  - cts_patch000_split0_0000.nii.gz
-  - cts_patch001_split0_0000.nii.gz
-  - cts_patch012_split0_0000.nii.gz
-  - polnet_patch009_split0_0000.nii.gz
-  - polnet_patch008_split0_0000.nii.gz
-  - cts_patch017_split0_0000.nii.gz
-  - cts_patch013_split0_0000.nii.gz
-  - polnet_patch017_split0_0000.nii.gz
-  - cts_patch006_split0_0000.nii.gz
-  - cts_patch010_split0_0000.nii.gz
-  - polnet_patch015_split0_0000.nii.gz
-  - polnet_patch012_split0_0000.nii.gz
-  - polnet_patch016_split0_0000.nii.gz
-  - cts_patch007_split0_0000.nii.gz
-  - polnet_patch002_split0_0000.nii.gz
-  - cts_patch011_split0_0000.nii.gz
-  - cts_patch016_split0_0000.nii.gz
-  - cts_patch005_split0_0000.nii.gz
-  - cts_patch014_split0_0000.nii.gz
-  - polnet_patch011_split0_0000.nii.gz
-  - polnet_patch007_split0_0000.nii.gz
-  - cts_patch002_split0_0000.nii.gz
-  - polnet_patch001_split0_0000.nii.gz
-  - polnet_patch006_split0_0000.nii.gz
-  - polnet_patch005_split0_0000.nii.gz
-  - polnet_patch019_split0_0000.nii.gz
+# train_tomo_names:
+#   - cts_patch015_split0_0000.nii.gz
+#   - cts_patch000_split0_0000.nii.gz
+#   - cts_patch001_split0_0000.nii.gz
+#   - cts_patch012_split0_0000.nii.gz
+#   - polnet_patch009_split0_0000.nii.gz
+#   - polnet_patch008_split0_0000.nii.gz
+#   - cts_patch017_split0_0000.nii.gz
+#   - cts_patch013_split0_0000.nii.gz
+#   - polnet_patch017_split0_0000.nii.gz
+#   - cts_patch006_split0_0000.nii.gz
+#   - cts_patch010_split0_0000.nii.gz
+#   - polnet_patch015_split0_0000.nii.gz
+#   - polnet_patch012_split0_0000.nii.gz
+#   - polnet_patch016_split0_0000.nii.gz
+#   - cts_patch007_split0_0000.nii.gz
+#   - polnet_patch002_split0_0000.nii.gz
+#   - cts_patch011_split0_0000.nii.gz
+#   - cts_patch016_split0_0000.nii.gz
+#   - cts_patch005_split0_0000.nii.gz
+#   - cts_patch014_split0_0000.nii.gz
+#   - polnet_patch011_split0_0000.nii.gz
+#   - polnet_patch007_split0_0000.nii.gz
+#   - cts_patch002_split0_0000.nii.gz
+#   - polnet_patch001_split0_0000.nii.gz
+#   - polnet_patch006_split0_0000.nii.gz
+#   - polnet_patch005_split0_0000.nii.gz
+#   - polnet_patch019_split0_0000.nii.gz
 
 # val_tomo_names:
 #   - cts_patch008_split0_0000.nii.gz

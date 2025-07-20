@@ -39,7 +39,7 @@ def train(cfg):
     checkpoint_callback = ModelCheckpoint(
         monitor="val/dice_loss",  # Replace with your validation metric
         filename="{epoch}-{val/dice_loss:.2f}",
-        save_top_k=5,
+        save_top_k=1,
         mode="min",  # 'min' for loss/error, 'max' for accuracy
         dirpath=f"/mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/{exp_name}",
     )
@@ -70,7 +70,8 @@ def train(cfg):
     )
 
     trainer = pl.Trainer(
-        max_epochs=cfg.method.max_epochs,
+        # max_epochs=cfg.method.max_epochs,
+        max_steps=cfg.method.max_steps,
         logger=(
             None
             if cfg.debug
