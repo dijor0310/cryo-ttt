@@ -255,6 +255,8 @@ class MemDenoiseg(L.LightningModule):
                 upsample_kernel_size=self.config.dynunet.upsample_kernel_size,
                 filters=self.config.dynunet.filters,
                 res_block=self.config.dynunet.res_block,
+                # norm_name=('INSTANCE', {'affine': True}),
+                norm_name=('BATCH', {'affine': True}),
             )
         else:
             self.model = UNet3D(
@@ -641,7 +643,8 @@ class MemDenoisegTentSubset(MemDenoisegTTTSubset):
         super().__init__(config)
 
     def training_step(self, batch, batch_idx):
-        self.configure_model()
+        # self.configure_model()
+        configure_model(self.model)
         out = self(batch)
         entropy = softmax_entropy(out["y_hat"].flatten()).mean(dim=0)
         self.log_dict(
@@ -654,9 +657,10 @@ class MemDenoisegTentSubset(MemDenoisegTTTSubset):
             sync_dist=True,
         )
         # return out["metrics"]["train/mse_loss"]
-        return entropy + out["metrics"]["train/mse_loss"]
+        return entropy #+ out["metrics"]["train/mse_loss"]
     
     def validation_step(self, batch, batch_idx):
+        configure_model_val(self.model)
         out = self(batch, is_val=True)
         entropy = softmax_entropy(out["y_hat"].flatten()).mean(dim=0)
         self.log_dict(
@@ -675,21 +679,61 @@ class MemDenoisegTentSubset(MemDenoisegTTTSubset):
         })
         self.global_dice_score.reset()
 
-    def configure_model(self):
-        """Configure model for use with tent."""
-        # train mode, because tent optimizes the model to minimize entropy
-        self.model.train()
-        # disable grad, to (re-)enable only what tent updates
-        self.model.requires_grad_(False)
-        # configure norm for tent updates: enable grad + force batch statisics
-        for m in self.model.modules():
-            if isinstance(m, nn.InstanceNorm3d):
-                m.requires_grad_(True)
-                # force use of batch stats in train and eval modes
-                m.track_running_stats = False
-                m.running_mean = None
-                m.running_var = None
-        # return model
+    # def configure_model(self):
+    #     """Configure model for use with tent."""
+    #     # train mode, because tent optimizes the model to minimize entropy
+    #     self.model.train()
+    #     # disable grad, to (re-)enable only what tent updates
+    #     self.model.requires_grad_(False)
+    #     # configure norm for tent updates: enable grad + force batch statisics
+    #     for m in self.model.modules():
+    #         # print(m)
+    #         # if isinstance(m, nn.InstanceNorm3d):
+    #         if isinstance(m, nn.BatchNorm3d):
+    #             m.requires_grad_(True)
+    #             # force use of batch stats in train and eval modes
+    #             m.track_running_stats = False
+    #             m.running_mean = None
+    #             m.running_var = None
+    #         # pass
+    #     # return model
+
+def configure_model(model):
+    """Configure model for use with tent."""
+    # train mode, because tent optimizes the model to minimize entropy
+    model.train()
+    # disable grad, to (re-)enable only what tent updates
+    model.requires_grad_(False)
+    # configure norm for tent updates: enable grad + force batch statisics
+    for m in model.modules():
+        # print(m)
+        # if isinstance(m, nn.InstanceNorm3d):
+        if isinstance(m, nn.BatchNorm3d):
+            m.requires_grad_(True)
+            # force use of batch stats in train and eval modes
+            m.track_running_stats = False
+            m.running_mean = None
+            m.running_var = None
+
+def configure_model_val(model):
+    """Configure model for use with tent."""
+    # train mode, because tent optimizes the model to minimize entropy
+    model.eval()
+    # disable grad, to (re-)enable only what tent updates
+    # model.requires_grad_(False)
+    # configure norm for tent updates: enable grad + force batch statisics
+    for m in model.modules():
+        # print(m)
+        # if isinstance(m, nn.InstanceNorm3d):
+        if isinstance(m, nn.BatchNorm3d):
+            # m.requires_grad_(True)
+            # force use of batch stats in train and eval modes
+            m.track_running_stats = False
+            m.running_mean = None
+            m.running_var = None
+
+        # pass
+    # return model
 
 
 @torch.jit.script
