@@ -1,11 +1,12 @@
 # Model type
 # model_name: memdenoiseg
-model_name: memdenoiseg_ttt_subset
+# model_name: memdenoiseg_ttt_subset
+model_name: memdenoiseg_ttt_subset_sequential
 # model_name: memdenoiseg_ttt
 
 # Dataset config
 # train_batch_size: 8
-train_batch_size: 4
+train_batch_size: 8
 eval_batch_size: 1
 test_batch_size: 2
 dataset: memseg_f2fd
@@ -49,7 +50,9 @@ gamma_decay: 1.0
 grad_clip_norm: null
 
 # Data related config
-root_dir:  /media/ssd3/diyor/membrain-seg-data/MemBrain_seg_training_data
+images_root_dir:  /media/ssd3/diyor/membrain-seg-data/MemBrain_seg_training_data
+labels_root_dir:  /media/ssd3/diyor/membrain-seg-data/MemBrain_seg_training_data
+
 data_prefix: [""]
 normalize_data: True
 patch_size: 160

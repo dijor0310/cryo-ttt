@@ -104,6 +104,12 @@ def train(cfg):
         val_dataloaders=val_loader,
         ckpt_path=cfg.ckpt_path,
     )
+    # trainer.validate(
+    #     model=model,
+    #     # train_dataloaders=train_loader,
+    #     dataloaders=val_loader,
+    #     ckpt_path=cfg.ckpt_path,
+    # )
 
 
 if __name__ == "__main__":

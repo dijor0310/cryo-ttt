@@ -24,6 +24,8 @@ from monai.inferers import SlidingWindowInferer
 from datasets.transforms import F2FDMaskingTransform
 from monai.transforms import Compose, ToTensor
 from models.unet3d import UNet3D
+import nibabel as nib
+from pathlib import Path
 
 def normalize_min_max(image):
     return (image - image.min()) * 255 / (image.max() - image.min())
@@ -302,7 +304,8 @@ class MemDenoiseg(L.LightningModule):
     def training_step(self, batch, batch_idx):
         x, y_out = batch["image"], batch["label"]
         
-        x_input, x_target = batch["noisy_1"], batch["noisy_2"]
+        # x_input, x_target = batch["noisy_1"], batch["noisy_2"]
+        x_input, x_target = batch["image"], batch["label"]
 
         out = self.model(x_input)
 
@@ -313,7 +316,7 @@ class MemDenoiseg(L.LightningModule):
         loss, bce_loss, dice_loss = self.criterion(y_hat, y_out)
         rec_loss = self.masked_rec_loss(x_hat, x_target, mask=(y_out != 2))
 
-        loss = loss + rec_loss
+        loss = self.config.alpha_seg * loss + self.config.alpha_denoise* rec_loss
         acc = self.masked_accuracy(y_hat, y_out, (y_out != 2.0))
 
         self.log(
@@ -344,7 +347,8 @@ class MemDenoiseg(L.LightningModule):
     def validation_step(self, batch, batch_idx):
         x, y_out = batch["image"], batch["label"]
         
-        x_input, x_target = batch["noisy_1"], batch["noisy_2"]
+        # x_input, x_target = batch["noisy_1"], batch["noisy_2"]
+        x_input, x_target = batch["image"], batch["label"]
         batch_size = x.shape[0]
 
         out = self.model(x_input)
@@ -385,6 +389,14 @@ class MemDenoiseg(L.LightningModule):
                 "val/predict": wandb.Image(FT.to_pil_image(((y_hat[0, 0, slice_to_log].sigmoid() > 0.5).int() * 255).to(torch.uint8), mode="L"))
             }
         )
+
+        # full_pred = self.inferer(
+        #     inputs=x_input,
+        #     network=self.model,
+        # )
+        # # Save as .nii.gz
+        # nifti_img = nib.Nifti1Image(full_pred[0, 0].squeeze().cpu().detach().numpy(), affine=np.eye(4))
+        # nib.save(nifti_img, Path("/media/ssd3/diyor/membrain-seg-data/spinach_f2fd_denoised/imagesTr") / batch["image_filename"][0])
 
         if "start_coord" in batch:
             start_coord = batch["start_coord"]

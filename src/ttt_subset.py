@@ -1,5 +1,6 @@
 import torch
 import pytorch_lightning as pl
+from torch.nn.modules.utils import consume_prefix_in_state_dict_if_present
 
 from pytorch_lightning.loggers import WandbLogger
 from torch.utils.data import DataLoader
@@ -37,8 +38,10 @@ def ttt(cfg):
 
     exp_name = f"{cfg.exp_name}-{str(uuid.uuid4())[:5]}"
     checkpoint_callback = ModelCheckpoint(
-        monitor="train/dice_loss",  # Replace with your validation metric
-        filename="{epoch}-{train/dice_loss:.2f}",
+        # monitor="train/dice_loss",  # Replace with your validation metric
+        # filename="{epoch}-{train/dice_loss:.2f}",
+        monitor="val/dice_loss",  # Replace with your validation metric
+        filename="{epoch}-{val/dice_loss:.2f}",
         save_top_k=5,
         mode="min",  # 'min' for loss/error, 'max' for accuracy
         dirpath=f"/mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/{exp_name}",
@@ -91,7 +94,14 @@ def ttt(cfg):
     )
 
     # print(model.__class__)
-    model = model.__class__.load_from_checkpoint(cfg.ckpt_path, config=cfg, map_location=torch.device("cpu"))
+    # model = model.__class__.load_from_checkpoint(cfg.ckpt_path, config=cfg, map_location=torch.device("cpu"))
+    weights = torch.load(cfg.ckpt_path, map_location=torch.device("cpu"))
+    consume_prefix_in_state_dict_if_present(weights["state_dict"], prefix="model.")
+    model.model.load_state_dict(weights["state_dict"])
+
+    state_dict = torch.load("/mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-spinach-sequential-on-denoised-tomos-1a1c9/epoch=986-val/dice_loss=0.23.ckpt", map_location=torch.device("cpu"))
+    consume_prefix_in_state_dict_if_present(state_dict["state_dict"], prefix="model.")
+    model.seg_model.load_state_dict(state_dict["state_dict"])
 
     trainer.validate(
         model=model,

@@ -2,11 +2,13 @@
 # model_name: memdenoiseg
 # model_name: memdenoiseg_ttt_subset
 # model_name: memdenoiseg_ttt
+alpha_seg: 1.0
+alpha_denoise: 0.0
 model_name: memdenoiseg
 
 # Dataset config
 # train_batch_size: 8
-train_batch_size: 2
+train_batch_size: 8
 eval_batch_size: 1
 test_batch_size: 2
 dataset: memseg_f2fd
@@ -49,7 +51,9 @@ gamma_decay: 1.0
 grad_clip_norm: null
 
 # Data related config
-root_dir:  /media/ssd3/diyor/membrain-seg-data/MemBrain_seg_training_data
+images_root_dir:  /media/ssd3/diyor/membrain-seg-data/spinach_f2fd_denoised
+# images_root_dir:  /media/ssd3/diyor/membrain-seg-data/MemBrain_seg_training_data
+labels_root_dir:  /media/ssd3/diyor/membrain-seg-data/MemBrain_seg_training_data
 data_prefix: [""]
 normalize_data: True # True for train, False for test/ttt
 patch_size: 160
@@ -83,41 +87,41 @@ disable_train_transforms: False
 #   - rory_tomo33b_patch0_raw_split0_0000.nii.gz
 #   - rory_tomo35b_patch0_raw_split0_0000.nii.gz
 
-val_tomo_names:
-  - spinach_tomo17_patch009_split0_0000.nii.gz
-  - spinach_tomo02_patch006_raw_split0_0000.nii.gz
-  - spinach_tomo02_patch020_raw_split0_0000.nii.gz
-  - spinach_tomo32_patch004_split0_0000.nii.gz
-  - spinach_tomo10_patch009_split0_0000.nii.gz
+# val_tomo_names:
+#   - spinach_tomo17_patch009_split0_0000.nii.gz
+#   - spinach_tomo02_patch006_raw_split0_0000.nii.gz
+#   - spinach_tomo02_patch020_raw_split0_0000.nii.gz
+#   - spinach_tomo32_patch004_split0_0000.nii.gz
+#   - spinach_tomo10_patch009_split0_0000.nii.gz
 
-train_tomo_names:
-  - cts_patch015_split0_0000.nii.gz
-  - cts_patch000_split0_0000.nii.gz
-  - cts_patch001_split0_0000.nii.gz
-  - cts_patch012_split0_0000.nii.gz
-  - polnet_patch009_split0_0000.nii.gz
-  - polnet_patch008_split0_0000.nii.gz
-  - cts_patch017_split0_0000.nii.gz
-  - cts_patch013_split0_0000.nii.gz
-  - polnet_patch017_split0_0000.nii.gz
-  - cts_patch006_split0_0000.nii.gz
-  - cts_patch010_split0_0000.nii.gz
-  - polnet_patch015_split0_0000.nii.gz
-  - polnet_patch012_split0_0000.nii.gz
-  - polnet_patch016_split0_0000.nii.gz
-  - cts_patch007_split0_0000.nii.gz
-  - polnet_patch002_split0_0000.nii.gz
-  - cts_patch011_split0_0000.nii.gz
-  - cts_patch016_split0_0000.nii.gz
-  - cts_patch005_split0_0000.nii.gz
-  - cts_patch014_split0_0000.nii.gz
-  - polnet_patch011_split0_0000.nii.gz
-  - polnet_patch007_split0_0000.nii.gz
-  - cts_patch002_split0_0000.nii.gz
-  - polnet_patch001_split0_0000.nii.gz
-  - polnet_patch006_split0_0000.nii.gz
-  - polnet_patch005_split0_0000.nii.gz
-  - polnet_patch019_split0_0000.nii.gz
+# train_tomo_names:
+#   - cts_patch015_split0_0000.nii.gz
+#   - cts_patch000_split0_0000.nii.gz
+#   - cts_patch001_split0_0000.nii.gz
+#   - cts_patch012_split0_0000.nii.gz
+#   - polnet_patch009_split0_0000.nii.gz
+#   - polnet_patch008_split0_0000.nii.gz
+#   - cts_patch017_split0_0000.nii.gz
+#   - cts_patch013_split0_0000.nii.gz
+#   - polnet_patch017_split0_0000.nii.gz
+#   - cts_patch006_split0_0000.nii.gz
+#   - cts_patch010_split0_0000.nii.gz
+#   - polnet_patch015_split0_0000.nii.gz
+#   - polnet_patch012_split0_0000.nii.gz
+#   - polnet_patch016_split0_0000.nii.gz
+#   - cts_patch007_split0_0000.nii.gz
+#   - polnet_patch002_split0_0000.nii.gz
+#   - cts_patch011_split0_0000.nii.gz
+#   - cts_patch016_split0_0000.nii.gz
+#   - cts_patch005_split0_0000.nii.gz
+#   - cts_patch014_split0_0000.nii.gz
+#   - polnet_patch011_split0_0000.nii.gz
+#   - polnet_patch007_split0_0000.nii.gz
+#   - cts_patch002_split0_0000.nii.gz
+#   - polnet_patch001_split0_0000.nii.gz
+#   - polnet_patch006_split0_0000.nii.gz
+#   - polnet_patch005_split0_0000.nii.gz
+#   - polnet_patch019_split0_0000.nii.gz
 
 # val_tomo_names:
 #   - cts_patch008_split0_0000.nii.gz
@@ -265,6 +269,100 @@ train_tomo_names:
 # val_tomo_names:
 #   - spinach_tomo38_patch000_split0_0000.nii.gz
 #   - spinach_tomo38_patch002_split0_0000.nii.gz
+
+train_tomo_names:
+ - spinach_tomo02_patch000_raw_split0_0000.nii.gz
+ - spinach_tomo02_patch000_split0_0000.nii.gz
+ - spinach_tomo02_patch001_raw_split0_0000.nii.gz
+ - spinach_tomo02_patch001_split0_0000.nii.gz
+ - spinach_tomo02_patch002_raw_split0_0000.nii.gz
+ - spinach_tomo02_patch002_split0_0000.nii.gz
+ - spinach_tomo02_patch003_raw_split0_0000.nii.gz
+ - spinach_tomo02_patch003_split0_0000.nii.gz
+ - spinach_tomo02_patch004_raw_split0_0000.nii.gz
+ - spinach_tomo02_patch004_split0_0000.nii.gz
+ - spinach_tomo02_patch005_raw_split0_0000.nii.gz
+ - spinach_tomo02_patch005_split0_0000.nii.gz
+ - spinach_tomo02_patch006_raw_split0_0000.nii.gz
+ - spinach_tomo02_patch006_split0_0000.nii.gz
+ - spinach_tomo02_patch020_raw_split0_0000.nii.gz
+ - spinach_tomo02_patch020_split0_0000.nii.gz
+ - spinach_tomo02_patch021_raw_split0_0000.nii.gz
+ - spinach_tomo02_patch021_split0_0000.nii.gz
+ - spinach_tomo02_patch030_raw_split0_0000.nii.gz
+ - spinach_tomo02_patch030_split0_0000.nii.gz
+ - spinach_tomo03_patch000_raw_split0_0000.nii.gz
+ - spinach_tomo03_patch000_split0_0000.nii.gz
+ - spinach_tomo03_patch002_raw_split0_0000.nii.gz
+ - spinach_tomo03_patch002_split0_0000.nii.gz
+ - spinach_tomo03_patch004_raw_split0_0000.nii.gz
+ - spinach_tomo03_patch004_split0_0000.nii.gz
+ - spinach_tomo03_patch006_raw_split0_0000.nii.gz
+ - spinach_tomo03_patch006_split0_0000.nii.gz
+ - spinach_tomo03_patch008_raw_split0_0000.nii.gz
+ - spinach_tomo03_patch008_split0_0000.nii.gz
+ - spinach_tomo03_patch010_raw_split0_0000.nii.gz
+ - spinach_tomo03_patch010_split0_0000.nii.gz
+ - spinach_tomo03_patch020_raw_split0_0000.nii.gz
+ - spinach_tomo03_patch020_split0_0000.nii.gz
+ - spinach_tomo03_patch021_raw_split0_0000.nii.gz
+ - spinach_tomo03_patch021_split0_0000.nii.gz
+ - spinach_tomo03_patch022_raw_split0_0000.nii.gz
+ - spinach_tomo03_patch022_split0_0000.nii.gz
+ - spinach_tomo03_patch030_raw_split0_0000.nii.gz
+ - spinach_tomo03_patch030_split0_0000.nii.gz
+ - spinach_tomo03_patch031_raw_split0_0000.nii.gz
+ - spinach_tomo03_patch031_split0_0000.nii.gz
+ - spinach_tomo03_patch032_raw_split0_0000.nii.gz
+ - spinach_tomo03_patch032_split0_0000.nii.gz
+ - spinach_tomo04_patch000_split0_0000.nii.gz
+ - spinach_tomo04_patch002_split0_0000.nii.gz
+ - spinach_tomo04_patch004_split0_0000.nii.gz
+ - spinach_tomo04_patch006_split0_0000.nii.gz
+ - spinach_tomo04_patch008_split0_0000.nii.gz
+ - spinach_tomo04_patch009_split0_0000.nii.gz
+ - spinach_tomo04_patch020_split0_0000.nii.gz
+ - spinach_tomo04_patch021_split0_0000.nii.gz
+ - spinach_tomo04_patch030_split0_0000.nii.gz
+ - spinach_tomo10_patch001_split0_0000.nii.gz
+ - spinach_tomo10_patch002_split0_0000.nii.gz
+ - spinach_tomo10_patch003_split0_0000.nii.gz
+ - spinach_tomo10_patch009_split0_0000.nii.gz
+ - spinach_tomo10_patch010_split0_0000.nii.gz
+ - spinach_tomo10_patch011_split0_0000.nii.gz
+ - spinach_tomo10_patch020_split0_0000.nii.gz
+ - spinach_tomo10_patch030_split0_0000.nii.gz
+ - spinach_tomo17_patch000_split0_0000.nii.gz
+ - spinach_tomo17_patch001_split0_0000.nii.gz
+ - spinach_tomo17_patch002_split0_0000.nii.gz
+ - spinach_tomo17_patch006_split0_0000.nii.gz
+ - spinach_tomo17_patch008_split0_0000.nii.gz
+ - spinach_tomo17_patch009_split0_0000.nii.gz
+ - spinach_tomo17_patch010_split0_0000.nii.gz
+ - spinach_tomo17_patch014_split0_0000.nii.gz
+ - spinach_tomo17_patch015_split0_0000.nii.gz
+ - spinach_tomo17_patch030_split0_0000.nii.gz
+ - spinach_tomo32_patch000_split0_0000.nii.gz
+ - spinach_tomo32_patch002_split0_0000.nii.gz
+ - spinach_tomo32_patch004_split0_0000.nii.gz
+ - spinach_tomo32_patch006_split0_0000.nii.gz
+ - spinach_tomo32_patch008_split0_0000.nii.gz
+ - spinach_tomo32_patch010_split0_0000.nii.gz
+ - spinach_tomo32_patch012_split0_0000.nii.gz
+ - spinach_tomo32_patch014_split0_0000.nii.gz
+ - spinach_tomo32_patch020_split0_0000.nii.gz
+ - spinach_tomo32_patch030_split0_0000.nii.gz
+ - spinach_tomo32_patch031_split0_0000.nii.gz
+val_tomo_names:
+ - spinach_tomo38_patch000_split0_0000.nii.gz
+ - spinach_tomo38_patch002_split0_0000.nii.gz
+ - spinach_tomo38_patch004_split0_0000.nii.gz
+ - spinach_tomo38_patch006_split0_0000.nii.gz
+ - spinach_tomo38_patch008_split0_0000.nii.gz
+ - spinach_tomo38_patch010_split0_0000.nii.gz
+ - spinach_tomo38_patch020_split0_0000.nii.gz
+ - spinach_tomo38_patch021_split0_0000.nii.gz
+ - spinach_tomo38_patch030_split0_0000.nii.gz
 
 # Testing
 # monai_inference: False

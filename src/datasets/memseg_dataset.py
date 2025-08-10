@@ -219,12 +219,12 @@ class MemSegF2FDDataset(Dataset):
         
         self.is_validation = is_validation
         
-        self.root_dir = config.root_dir
+        self.images_root_dir = config.images_root_dir
         self.config = config
 
         if self.is_validation:
-            self.image_dir = os.path.join(config.root_dir, "imagesTr")
-            self.label_dir = os.path.join(config.root_dir, "labelsTr")
+            self.image_dir = os.path.join(config.images_root_dir, "imagesTr")
+            self.label_dir = os.path.join(config.labels_root_dir, "labelsTr")
 
             # self.image_filenames = sorted([
             #     f for f in os.listdir(self.image_dir) if f.endswith(".nii.gz")
@@ -234,8 +234,8 @@ class MemSegF2FDDataset(Dataset):
         
             self.transforms = None
         else:
-            self.image_dir = os.path.join(config.root_dir, "imagesTr")
-            self.label_dir = os.path.join(config.root_dir, "labelsTr")
+            self.image_dir = os.path.join(config.images_root_dir, "imagesTr")
+            self.label_dir = os.path.join(config.labels_root_dir, "labelsTr")
 
             # self.image_filenames = sorted([f for f in os.listdir(self.image_dir) if f.endswith(".nii.gz") and f.startswith(tuple(config.data_prefix))])
             self.image_filenames = self.config.train_tomo_names
@@ -283,7 +283,9 @@ class MemSegF2FDDataset(Dataset):
 
         return sample | {
             "noisy_1": masked_raw1.unsqueeze(0).to(torch.float32),
-            "noisy_2": masked_raw2.unsqueeze(0).to(torch.float32)
+            "noisy_2": masked_raw2.unsqueeze(0).to(torch.float32),
+            "image_filename": Path(img_path).name,
+            "label_filename": Path(label_path).name,
         }
 
 

@@ -6,6 +6,7 @@ from .denoiseg import Denoiseg
 from .memseg import MemSeg, MemDenoiseg, MemDenoisegTTT
 from .unet3d import UNet3D
 from .memseg import MemDenoisegTTTSubset, MemDenoisegTentSubset
+from .sequential_baseline import MemDenoisegTTTSubsetSequential
 
 __all__ = {
     "deepict_unet3d": UNet3D_Lightning,
@@ -19,6 +20,7 @@ __all__ = {
     "memdenoiseg_ttt": MemDenoisegTTT,
     "memdenoiseg_ttt_subset": MemDenoisegTTTSubset,
     "memdenoiseg_tent_subset": MemDenoisegTentSubset,
+    "memdenoiseg_ttt_subset_sequential": MemDenoisegTTTSubsetSequential,
 }
 
 
