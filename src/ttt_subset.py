@@ -69,7 +69,8 @@ def ttt(cfg):
     # val_loader = DataLoader([0])
 
     trainer = pl.Trainer(
-        max_epochs=cfg.method.max_epochs,
+        # max_epochs=cfg.method.max_epochs,
+        max_steps=cfg.method.max_steps,
         logger=(
             None
             if cfg.debug
