@@ -78,6 +78,7 @@ class MemSeg(L.LightningModule):
             ignore_label=2,
             reduction='mean',
         )
+        self.global_dice_score = GlobalDiceMetric()
 
         # self.dice_loss = MaskedLoss(DiceLoss, reduction='mean')
         self.dice_loss = MaskedDiceLoss(sigmoid=True)
@@ -110,13 +111,39 @@ class MemSeg(L.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         # x, y_out = batch["image"], batch["label"]
-        x, y_out = batch["noisy_1"], batch["label"]
+        # x, y_out = batch["noisy_1"], batch["label"]
 
+        # y_hat = self.model(x)
+
+        # loss, bce_loss, dice_loss = self.criterion(y_hat, y_out)
+        # mask = y_out != 2.0
+        # acc = (((sigmoid(y_hat) > 0.5).int() == y_out) * mask).sum() / mask.sum()
+
+        # self.log_dict(
+        #     {
+        #         "val/loss": loss,
+        #         "val/accuracy": acc,
+        #         "val/dice_loss": dice_loss,
+        #         "val/ce_loss": bce_loss,
+        #     },
+        #     on_step=False,
+        #     on_epoch=True,
+        #     batch_size=x.shape[0],
+        #     sync_dist=True,
+        # )
+
+        x, y_out = batch["image"], batch["label"]
+        
         y_hat = self.model(x)
 
         loss, bce_loss, dice_loss = self.criterion(y_hat, y_out)
+        # rec_loss = self.masked_rec_loss(x_hat, x_target, mask=(y_out != 2))
+
+        # loss = loss + rec_loss
         mask = y_out != 2.0
         acc = (((sigmoid(y_hat) > 0.5).int() == y_out) * mask).sum() / mask.sum()
+
+        self.global_dice_score.update(y_hat, y_out)
 
         self.log_dict(
             {
@@ -130,20 +157,14 @@ class MemSeg(L.LightningModule):
             batch_size=x.shape[0],
             sync_dist=True,
         )
-        
-        if "start_coord" in batch:
-            start_coord = batch["start_coord"]
-            gathered_start_coords = self.all_gather(start_coord.detach())
-            gathered_y_hats = self.all_gather(y_hat.squeeze(1).detach())
 
-            if self.trainer.global_rank == 0:
-
-                self.val_start_coords.extend(torch.unbind(gathered_start_coords.cpu().flatten(end_dim=1), dim=0))
-                self.val_preds.extend(torch.unbind(gathered_y_hats.cpu().sigmoid().flatten(end_dim=1), dim=0))
-
-
-    # def on_validation_epoch_end(self):
-
+    def on_validation_epoch_end(self):
+        gg = self.global_dice_score.compute()
+        self.logger.experiment.log({
+            "val/global_dice": gg,
+        })
+        print(gg)
+        self.global_dice_score.reset()
     #     if self.trainer.global_rank != 0:
     #         return
         

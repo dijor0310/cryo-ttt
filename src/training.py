@@ -98,10 +98,15 @@ def train(cfg):
     #     cfg.ckpt_path = find_latest_checkpoint(search_pattern)
     #     print(f"Found checkpoint: {cfg.ckpt_path}")
 
-    trainer.fit(
+    # trainer.fit(
+    #     model=model,
+    #     train_dataloaders=train_loader,
+    #     val_dataloaders=val_loader,
+    #     ckpt_path=cfg.ckpt_path,
+    # )
+    trainer.validate(
         model=model,
-        train_dataloaders=train_loader,
-        val_dataloaders=val_loader,
+        dataloaders=val_loader,
         ckpt_path=cfg.ckpt_path,
     )
 

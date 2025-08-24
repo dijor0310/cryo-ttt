@@ -5,13 +5,15 @@
 # exp_name: denoiseg-GN-def-norm-p160
 # exp_name: memseg-dynunet-oracle-masked
 # exp_name: memseg-f2fd-synthetic-subset16-val-spinach
-exp_name: memseg-f2fd-spinach-nonspinach-unmasked-sgd-1e-2-no-trans-b16-long
-wandb_project_name: cryo-ttt-v2
+# exp_name: memseg-f2fd-spinach-nonspinach-unmasked-sgd-1e-2-no-trans-b16-long
+exp_name: memseg-oracle-nonspinach
+# wandb_project_name: cryo-ttt-v2
+wandb_project_name: cryo-ttt-ttt
 # ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-spinach-0.25-3e112/epoch=978-val/dice_loss=0.20.ckpt
 # ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-spinach-0.5-df71c/epoch=976-val/dice_loss=0.20.ckpt
 # ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-spinach-0.75-9714f/epoch=959-val/dice_loss=0.20.ckpt
 # ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-spinach-0.125-bd1f8/epoch=826-val/dice_loss=0.18.ckpt
-ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-spinach-f2402/epoch=980-val/dice_loss=0.24.ckpt
+# ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-spinach-f2402/epoch=980-val/dice_loss=0.24.ckpt
 
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-gn-vpp-norm_data-4919c/epoch=191-val/dice_loss=0.39.ckpt
 # ckpt_path: /workspaces/cryo/cryo-ttt/src/ttt_ckpt/denoiseg-gn-def-norm_data-95656/epoch=380-val/dice_loss=0.49.ckpt
@@ -43,6 +45,7 @@ ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-f2fd-spinac
 # ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-f2fd-synthetic-subset16-87633/epoch=765-val/dice_loss=0.46.ckpt
 # ckpt_path: null
 # ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-oracle-masked-553f6/epoch=351-val/dice_loss=0.25.ckpt
+ckpt_path: /mnt/hdd_pool_zion/userdata/diyor/ttt_ckpt/memseg-dynunet-oracle-d7077/epoch=864-val/dice_loss=0.18.ckpt
 seed: 42 # random seed
 debug: False # debug mode, will use cpu only
 devices: [ 3 ] # gpu ids
@@ -67,8 +70,8 @@ enable_progress_bar: True
 
 defaults:
   - _self_
-  - method: memdenoiseg
-  # - method: memseg
+  # - method: memdenoiseg
+  - method: memseg
   # - method: denoiseg_f2fd
   # - method: denoiseg_v2
   # - method: deepict_unet3d_ittt
