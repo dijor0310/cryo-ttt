@@ -115,7 +115,7 @@ VALIDATION_FILENAMES: Final = [
     "spinach_tomo38_patch021_split0_0000.nii.gz",
     "spinach_tomo38_patch030_split0_0000.nii.gz",
 ]
-TRAINING_SET_SIZES: Final = range(20, 51, 2)  # Number of training samples for scaling law
+TRAINING_SET_SIZES: Final = range(33, 51, 3)  # Number of training samples for scaling law
 REPEATS_PER_SIZE = 1
 
 LOG_CSV_PATH = Path("scaling_law/scaling_law_results.csv")

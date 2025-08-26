@@ -178,3 +178,4 @@ plots
 *.out
 nohup
 cache
+*.png
