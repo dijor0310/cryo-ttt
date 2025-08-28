@@ -78,14 +78,15 @@ class MemSeg(L.LightningModule):
             ignore_label=2,
             reduction='mean',
         )
+        self.global_dice_score = GlobalDiceMetric()
 
         # self.dice_loss = MaskedLoss(DiceLoss, reduction='mean')
         self.dice_loss = MaskedDiceLoss(sigmoid=True)
         self.dice_score = DiceMetric()
     
     def training_step(self, batch, batch_idx):
-        # x, y_out = batch["image"], batch["label"]
-        x, y_out = batch["noisy_1"], batch["label"]
+        x, y_out = batch["image"], batch["label"]
+        # x, y_out = batch["noisy_1"], batch["label"]
 
         y_hat = self.model(x)
 
@@ -109,14 +110,15 @@ class MemSeg(L.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        # x, y_out = batch["image"], batch["label"]
-        x, y_out = batch["noisy_1"], batch["label"]
+        x, y_out = batch["image"], batch["label"]
+        # x, y_out = batch["noisy_1"], batch["label"]
 
         y_hat = self.model(x)
 
         loss, bce_loss, dice_loss = self.criterion(y_hat, y_out)
         mask = y_out != 2.0
         acc = (((sigmoid(y_hat) > 0.5).int() == y_out) * mask).sum() / mask.sum()
+        self.global_dice_score.update(y_hat, y_out)
 
         self.log_dict(
             {
@@ -142,7 +144,11 @@ class MemSeg(L.LightningModule):
                 self.val_preds.extend(torch.unbind(gathered_y_hats.cpu().sigmoid().flatten(end_dim=1), dim=0))
 
 
-    # def on_validation_epoch_end(self):
+    def on_validation_epoch_end(self):
+        self.logger.experiment.log({
+            "val/global_dice": self.global_dice_score.compute(),
+        })
+        self.global_dice_score.reset()
 
     #     if self.trainer.global_rank != 0:
     #         return
@@ -347,7 +353,8 @@ class MemDenoiseg(L.LightningModule):
         x_input, x_target = batch["noisy_1"], batch["noisy_2"]
         batch_size = x.shape[0]
 
-        out = self.model(x_input)
+        # out = self.model(x_input)
+        out = self.model(x)
 
         x_hat, y_hat = torch.unbind(out, dim=1)
 
@@ -376,13 +383,14 @@ class MemDenoiseg(L.LightningModule):
         )
 
         slice_to_log = (y_out[0].squeeze() == 1).sum(dim=(-1, -2)).argmax()
+        tomo_name = batch["tomo_name"][0]
         self.logger.experiment.log(
             {
-                "val/target": wandb.Image(x_target[0, 0, slice_to_log]),
-                "val/tomo": wandb.Image(x[0, 0, slice_to_log]),
-                "val/denoised": wandb.Image(x_hat[0, 0, slice_to_log]),
-                "val/label": wandb.Image(y_out[0, 0, slice_to_log]),
-                "val/predict": wandb.Image(FT.to_pil_image(((y_hat[0, 0, slice_to_log].sigmoid() > 0.5).int() * 255).to(torch.uint8), mode="L"))
+                f"val/{tomo_name}/target": wandb.Image(x_target[0, 0, slice_to_log]),
+                f"val/{tomo_name}/tomo": wandb.Image(x[0, 0, slice_to_log]),
+                f"val/{tomo_name}/denoised": wandb.Image(x_hat[0, 0, slice_to_log]),
+                f"val/{tomo_name}/label": wandb.Image(y_out[0, 0, slice_to_log]),
+                f"val/{tomo_name}/predict": wandb.Image(FT.to_pil_image(((y_hat[0, 0, slice_to_log].sigmoid() > 0.5).int() * 255).to(torch.uint8), mode="L"))
             }
         )
 

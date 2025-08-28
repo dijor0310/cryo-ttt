@@ -283,7 +283,8 @@ class MemSegF2FDDataset(Dataset):
 
         return sample | {
             "noisy_1": masked_raw1.unsqueeze(0).to(torch.float32),
-            "noisy_2": masked_raw2.unsqueeze(0).to(torch.float32)
+            "noisy_2": masked_raw2.unsqueeze(0).to(torch.float32),
+            "tomo_name": Path(img_path).name.split(".")[0],
         }
 
 
