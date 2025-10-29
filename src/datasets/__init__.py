@@ -6,6 +6,7 @@ from .denoiseg_dataset import DenoisegPatchDatasetV2
 # from .f2fd_dataset import singleCET_FourierDataset
 from .f2fd_dataset import F2FD_Dataset, F2FD_DatasetV2
 from .memseg_dataset import MemSegDataset, MemSegF2FDDataset
+from .memseg_n2v_dataset import MemSegN2VDataset
 
 __all__ = {
     "deepict_h5": DeepictPatchDataset,
@@ -16,6 +17,7 @@ __all__ = {
     "denoiseg_f2fd": F2FD_DatasetV2,
     "memseg": MemSegDataset,
     "memseg_f2fd": MemSegF2FDDataset,
+    "memseg_n2v": MemSegN2VDataset
 }
 
 

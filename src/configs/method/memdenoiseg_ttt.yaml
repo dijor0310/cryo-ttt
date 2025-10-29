@@ -1,14 +1,17 @@
 # Model type
 # model_name: memdenoiseg
-model_name: memdenoiseg_ttt_subset
+model_name: memdenoiseg_n2v_ttt_subset
 # model_name: memdenoiseg_ttt
+
+optimize_only_bn: false
 
 # Dataset config
 # train_batch_size: 8
 train_batch_size: 4
 eval_batch_size: 1
 test_batch_size: 2
-dataset: memseg_f2fd
+# dataset: memseg_f2fd
+dataset: memseg_n2v
 # dataset: memseg
 
 # Simple UNet
@@ -27,13 +30,17 @@ dynunet:
   upsample_kernel_size: [1, 2, 2, 2, 2, 2]
   filters: [32, 64, 128, 256, 512, 1024]
   res_block: True
+  norm_name: BATCH
 
 
 # F2FD masking
-bernoulli_mask_ratio: 0.5
-phase_inversion_ratio: 0.1
-min_mask_radius: 0.05
-max_mask_radius: 0.1
+# bernoulli_mask_ratio: 0.5
+# phase_inversion_ratio: 0.1
+# min_mask_radius: 0.05
+# max_mask_radius: 0.1
+
+mask_ratio: 0.1
+window_size: 5
 
 # Optimizer config
 # learning_rate: 1e-6
@@ -45,7 +52,7 @@ max_mask_radius: 0.1
 learning_rate: 1e-2
 # max_epochs: 1000
 # max_steps: 5000
-max_steps: 1000
+max_steps: 5000
 # max_epochs: 0
 gamma_decay: 1.0
 grad_clip_norm: null
@@ -328,6 +335,33 @@ train_tomo_names:
   - polnet_patch017_split0_0000.nii.gz
   - polnet_patch018_split0_0000.nii.gz
   - polnet_patch019_split0_0000.nii.gz
+  - rory_tomo31a_patch0_raw_split0_0000.nii.gz
+  - rory_tomo31a_patch0_raw_v2_split0_0000.nii.gz
+  - rory_tomo33a_patch0_raw_split0_0000.nii.gz
+  - rory_tomo33a_patch0_raw_v2_split0_0000.nii.gz
+  - rory_tomo33b_patch0_raw_split0_0000.nii.gz
+  - rory_tomo33b_patch0_raw_v2_split0_0000.nii.gz
+  - rory_tomo34a_patch0_raw_split0_0000.nii.gz
+  - rory_tomo34a_patch0_raw_v2_split0_0000.nii.gz
+  - rory_tomo34b_patch0_raw_split0_0000.nii.gz
+  - rory_tomo34b_patch0_raw_v2_split0_0000.nii.gz
+  - rory_tomo35a_patch0_raw_split0_0000.nii.gz
+  - rory_tomo35a_patch0_raw_v2_split0_0000.nii.gz
+  - rory_tomo35b_patch0_raw_split0_0000.nii.gz
+  - rory_tomo35b_patch0_raw_v2_split0_0000.nii.gz
+  - rory_tomo36a_patch0_raw_split0_0000.nii.gz
+  - rory_tomo36a_patch0_raw_v2_split0_0000.nii.gz
+  - rory_tomo36b_patch0_raw_split0_0000.nii.gz
+  - rory_tomo36b_patch0_raw_v2_split0_0000.nii.gz
+  - rory_tomo37a_patch0_raw_split0_0000.nii.gz
+  - rory_tomo37a_patch0_raw_v2_split0_0000.nii.gz
+  - virly_cat1_00_split0_0000.nii.gz
+  - virly_cat1_01_split0_0000.nii.gz
+  - virly_cat1_02_split0_0000.nii.gz
+  - virly_cat1_03_split0_0000.nii.gz
+  - virly_cat2_00_split0_0000.nii.gz
+  - virly_cat2_01_split0_0000.nii.gz
+  - virly_cat2_02_split0_0000.nii.gz
   
 val_tomo_names: ${train_tomo_names}
 

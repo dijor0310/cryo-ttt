@@ -92,7 +92,7 @@ def ttt(cfg):
     )
 
     # print(model.__class__)
-    model = model.__class__.load_from_checkpoint(cfg.ckpt_path, config=cfg, map_location=torch.device("cpu"))
+    model = model.__class__.load_from_checkpoint(cfg.ckpt_path, config=cfg, map_location=torch.device("cpu"), strict=False)
 
     trainer.validate(
         model=model,
