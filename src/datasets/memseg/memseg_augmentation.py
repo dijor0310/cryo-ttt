@@ -1,3 +1,4 @@
+# Copied and adapted from https://github.com/teamtomo/membrain-seg
 from typing import Callable, List, Union
 
 import numpy as np

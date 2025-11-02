@@ -6,18 +6,6 @@ import numpy as np
 import pytorch_lightning as pl
 import torch
 
-
-def find_latest_checkpoint(search_pattern):
-
-    # List all files matching the pattern
-    list_of_files = glob.glob(search_pattern, recursive=True)
-    # Find the file with the latest modification time
-    if not list_of_files:
-        return None
-    latest_file = max(list_of_files, key=os.path.getmtime)
-    return latest_file
-
-
 def set_seed(seed_value=42):
     """
     Set seed for reproducibility in PyTorch Lightning based training.

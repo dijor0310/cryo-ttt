@@ -1,3 +1,4 @@
+# Copied and adapted from https://github.com/ZauggGroup/DeePiCt
 import torch
 import torch.nn as nn
 import numpy as np

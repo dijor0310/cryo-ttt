@@ -1,14 +1,14 @@
-# Denoising test-time training for cryo-ET membrane segmentation 🧊 🦠
+# F2FD-TTT: Test-time training with self-supervised Fourier-to-Fourier denoising for membrane segmentation in cryo-ET tomograms 🧊 🦠
 
 This repository contains the implementation of denoising test-time training for membrane segmentation in cryo-electron tomography (cryo-ET). The goal is to improve segmentation performance on noisy tomograms by adapting the model at test time.
 
-## Installation ⚙️ 
+## Quickstart ⚙️ 
 
 This project uses the [`uv`](https://github.com/astral-sh/uv) package manager for faster and more reliable Python dependency management.
 
 To install `uv`, please refer to their [official installation guide](https://github.com/astral-sh/uv#installation).
 
-After installing `uv`, install all dependencies with:
+After installing `uv`, install all project dependencies with:
 
 ```bash
 uv sync --all-extras --no-install-project
@@ -17,35 +17,18 @@ uv sync --all-extras --no-install-project
 source .venv/bin/activate
 ```
 
-This will create a virtual environment, install all required packages, and activate the virtual environment.
-
 This repository uses Weights & Biases (W&B) for logging metrics and visualizations, login to your W&B account:
 
 ```bash
 wandb login
 ```
 
-## Dataset 📂
-
-Prepare your Cryo-ET tomograms and corresponding segmentation labels in the following directory structure:
-
-```
-data/
-  train/
-    tomograms/
-    labels/
-  test/
-    tomograms/
-```
-
-Update the paths in the config files if needed.
-
 ## Training 🏋️‍♀️
 
 To train the base segmentation model on your training dataset:
 
 ```bash
-python train.py --config configs/train_config.yaml
+python training.py method=memdenoiseg
 ```
 
 You can adjust hyperparameters and paths in the `configs/train_config.yaml` file.
@@ -64,7 +47,7 @@ This will load the pre-trained model and fine-tune it on the test tomogram using
 
 You can configure TTT hyperparameters (e.g., adaptation steps, learning rate, denoising loss) in `configs/ttt_config.yaml`.
 
-## Citation 📚
+<!-- ## Citation 📚
 
 If you use this code for your research, please cite:
 
@@ -75,12 +58,12 @@ If you use this code for your research, please cite:
   journal={Journal Name},
   year={2025}
 }
-```
+``` -->
 
 ## License ⚖️
 
 This project is licensed under the MIT License. See `LICENSE` for details.
 
-## Contact 📬
+<!-- ## Contact 📬
 
-For questions or issues, please open an issue or contact [diyor.khayrutdinov@tum.com](mailto:diyor.khayrutdinov@domain.com).
+For questions or issues, please open an issue or contact [diyor.khayrutdinov@tum.com](mailto:diyor.khayrutdinov@domain.com). -->

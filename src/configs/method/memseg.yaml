@@ -32,26 +32,6 @@ gamma_decay: 1.0
 grad_clip_norm: null
 
 # Data related config
-root_dir:  /media/ssd3/diyor/membrain-seg-data/MemBrain_seg_training_data
+root_dir: ???
 normalize_data: True
 patch_size: 160
-
-
-# Testing
-# monai_inference: False
-# inference_key: ["image"]
-test_data_root_dir: /media/ssd3/diyor/patch-160-overlap-80
-test_tomo_names:
-  - rein/005/pixel-10
-  # - vpp/005/pixel-10
-  # - def/041/pixel-10
-
-test_entire_tomo: /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/tomograms_pixel_10/01122021_BrnoKrios_arctis_lam1_pos5.mrc
-test_entire_gt: /mnt/hdd_pool_zion/userdata/diyor/data/in_situ_reinhardtii/labels_pixel_10/01122021_BrnoKrios_arctis_lam1_pos5_memb1.mrc
-
-
-# test_entire_tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/tomograms_normalized_pixel_10/TS_0005_trimmed.rec
-# test_entire_gt: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/VPP/labels_pixel_10/TS_0005_membranes_trimmed.mrc
-
-# test_entire_tomo: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/tomograms_normalized_pixel_10/TS_041_trimmed.rec
-# test_entire_gt: /mnt/hdd_pool_zion/userdata/diyor/data/deepict/DEF/labels_pixel_10/TS_041_membranes_trimmed.mrc

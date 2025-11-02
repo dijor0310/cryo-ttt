@@ -19,7 +19,7 @@ import uuid
 torch.set_float32_matmul_precision("medium")
 
 
-@hydra.main(version_base=None, config_path="configs", config_name="config")
+@hydra.main(version_base=None, config_path="configs", config_name="training")
 def train(cfg):
     set_seed(cfg.seed)
     OmegaConf.set_struct(cfg, False)  # Open the struct
@@ -90,13 +90,6 @@ def train(cfg):
         num_sanity_val_steps=cfg.num_sanity_val_steps,
         enable_progress_bar=cfg.enable_progress_bar,
     )
-
-    # automatically resume training
-    # if cfg.ckpt_path is None and not cfg.debug:
-    #     # Pattern to match all .ckpt files in the base_path recursively
-    #     search_pattern = os.path.join("./src", exp_name, "**", "*.ckpt")
-    #     cfg.ckpt_path = find_latest_checkpoint(search_pattern)
-    #     print(f"Found checkpoint: {cfg.ckpt_path}")
 
     trainer.fit(
         model=model,
