@@ -174,7 +174,9 @@ wandb
 outputs
 ttt_ckpt
 lightning_logs
-plots
+plot*
+*charts
 *.out
 nohup
 cache
+scaling_law

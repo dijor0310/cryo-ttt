@@ -23,7 +23,6 @@ class DiceCELoss(_Loss):
         self.lambda_ce = lambda_ce
 
     def forward(self, data: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-
         ce_loss = binary_cross_entropy_with_logits(data, target)
 
         dice_loss = self.dice_loss(data, target)

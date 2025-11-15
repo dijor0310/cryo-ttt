@@ -5,7 +5,7 @@ from pytorch_lightning.loggers import WandbLogger
 from torch.utils.data import DataLoader
 from models import build_model
 from datasets import build_dataset
-from utils.utils import set_seed
+from ttt.utils.utils import set_seed
 from pytorch_lightning.callbacks import (
     ModelCheckpoint,
     LearningRateMonitor,
@@ -14,7 +14,6 @@ import hydra
 from omegaconf import OmegaConf
 import uuid
 
-from models.memseg import MemDenoisegTTT
 
 torch.set_float32_matmul_precision("medium")
 
@@ -27,11 +26,11 @@ def ttt(cfg):
 
     model = build_model(cfg)
 
-    train_set = build_dataset(cfg)
-    val_set = build_dataset(cfg, val=True)
+    train_set = build_dataset(cfg, test=True)
+    # val_set = build_dataset(cfg, val=True)
 
     train_batch_size = max(cfg.method["train_batch_size"] // len(cfg.devices), 1)
-    eval_batch_size = max(cfg.method["eval_batch_size"] // len(cfg.devices), 1)
+    # eval_batch_size = max(cfg.method["eval_batch_size"] // len(cfg.devices), 1)
 
     call_backs = []
 
@@ -57,32 +56,25 @@ def ttt(cfg):
         persistent_workers=cfg.persistent_workers,
     )
 
-    val_loader = DataLoader(
-        val_set,
-        batch_size=eval_batch_size,
-        num_workers=cfg.val_load_num_workers,
-        drop_last=False,
-        pin_memory=cfg.pin_memory,
-        persistent_workers=cfg.persistent_workers,
-    )
-
-    # val_loader = DataLoader([0])
+    val_loader = DataLoader([0])
 
     trainer = pl.Trainer(
-        # max_epochs=cfg.method.max_epochs,
-        max_steps=cfg.method.max_steps,
+        max_epochs=cfg.method.max_epochs,
         logger=(
             None
             if cfg.debug
-            else WandbLogger(project=cfg.wandb_project_name, name=exp_name, id=exp_name, config=OmegaConf.to_container(cfg))
+            else WandbLogger(
+                project=cfg.wandb_project_name,
+                name=exp_name,
+                id=exp_name,
+                config=OmegaConf.to_container(cfg),
+            )
         ),
         devices=1 if cfg.debug else cfg.devices,
         gradient_clip_val=cfg.gradient_clip_val,
         accumulate_grad_batches=cfg.accumulate_grad_batches,
         accelerator="cpu" if cfg.debug else "gpu",
         profiler=cfg.profiler,
-        # strategy="auto" if cfg.debug else "ddp",
-        # strategy="auto",
         strategy=cfg.strategy,
         callbacks=call_backs,
         check_val_every_n_epoch=cfg.check_val_every_n_epochs,
@@ -91,19 +83,18 @@ def ttt(cfg):
         enable_progress_bar=cfg.enable_progress_bar,
     )
 
-    # print(model.__class__)
-    model = model.__class__.load_from_checkpoint(cfg.ckpt_path, config=cfg, map_location=torch.device("cpu"))
+    model = model.__class__.load_from_checkpoint(
+        cfg.ckpt_path, config=cfg, map_location=torch.device("cpu")
+    )
 
     trainer.validate(
         model=model,
         dataloaders=val_loader,
-        # ckpt_path=cfg.ckpt_path,
     )
     trainer.fit(
         model=model,
         train_dataloaders=train_loader,
         val_dataloaders=val_loader,
-        # ckpt_path=cfg.ckpt_path,
     )
 
 

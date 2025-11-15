@@ -14,9 +14,9 @@ def crop_tensor(input_array: np.array, shape_to_crop: tuple) -> np.array:
     :return: np.array of size (cz, cy, cx)
     """
     input_shape = input_array.shape
-    assert all(
-        ish >= csh for ish, csh in zip(input_shape, shape_to_crop)
-    ), "Input shape must be larger equal crop shape"
+    assert all(ish >= csh for ish, csh in zip(input_shape, shape_to_crop)), (
+        "Input shape must be larger equal crop shape"
+    )
     # get the difference between the shapes
     shape_diff = tuple((ish - csh) // 2 for ish, csh in zip(input_shape, shape_to_crop))
     # calculate the crop
@@ -201,7 +201,7 @@ class UNet3D(nn.Module):
     def bilinear_upsampler(self, in_channels, out_channels):
         module = nn.Sequential(
             nn.Upsample(scale_factor=2, mode="trilinear"),
-            nn.Conv3d(in_channels, out_channels, kernel_size=3, padding=1)
+            nn.Conv3d(in_channels, out_channels, kernel_size=3, padding=1),
         )
         return module
 
@@ -231,9 +231,9 @@ class UNet3D(nn.Module):
 
         # the final activation must either be None or a Module
         if final_activation is not None:
-            assert isinstance(
-                final_activation, nn.Module
-            ), "Activation must be torch module"
+            assert isinstance(final_activation, nn.Module), (
+                "Activation must be torch module"
+            )
 
         n_features = [initial_features * 2**level for level in range(self.depth)]
         # modules of the encoder path
@@ -451,7 +451,9 @@ class UNet3D(nn.Module):
         # the upsampling layers
         self.upsamplers = nn.ModuleList(
             [
-                self.bilinear_upsampler(n_features_decode[level], n_features_decode[level + 1])
+                self.bilinear_upsampler(
+                    n_features_decode[level], n_features_decode[level + 1]
+                )
                 for level in range(self.depth)
             ]
         )

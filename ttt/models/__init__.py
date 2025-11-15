@@ -1,5 +1,4 @@
 from .memseg import MemSeg, MemDenoiseg, MemDenoisegTTT
-from .unet3d import UNet3D
 from .memseg import MemDenoisegTTTSubset, MemDenoisegTentSubset
 
 __all__ = {

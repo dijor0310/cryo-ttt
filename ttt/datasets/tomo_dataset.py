@@ -1,7 +1,6 @@
 import torch
 from torch.utils.data import Dataset
 import mrcfile
-import pandas as pd
 
 
 class TomoDataset(Dataset):
@@ -16,7 +15,6 @@ class TomoDataset(Dataset):
             self.tomo_paths.append(paths["tomo"])
             self.gt_paths.append(paths["membrane"])
             self.tomo_names.append(tomo_name)
-
 
     def __len__(self):
         return len(self.tomo_paths)
