@@ -1,4 +1,3 @@
-import os
 import torch
 import pytorch_lightning as pl
 
@@ -6,7 +5,7 @@ from pytorch_lightning.loggers import WandbLogger
 from torch.utils.data import DataLoader
 from models import build_model
 from datasets import build_dataset
-from utils.utils import set_seed
+from ttt.utils.utils import set_seed
 from pytorch_lightning.callbacks import (
     ModelCheckpoint,
     LearningRateMonitor,
@@ -74,7 +73,12 @@ def train(cfg):
         logger=(
             None
             if cfg.debug
-            else WandbLogger(project=cfg.wandb_project_name, name=exp_name, id=exp_name, config=OmegaConf.to_container(cfg))
+            else WandbLogger(
+                project=cfg.wandb_project_name,
+                name=exp_name,
+                id=exp_name,
+                config=OmegaConf.to_container(cfg),
+            )
         ),
         devices=1 if cfg.debug else cfg.devices,
         gradient_clip_val=cfg.gradient_clip_val,

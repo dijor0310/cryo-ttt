@@ -2,7 +2,6 @@ import h5py
 from torch.utils.data import Dataset
 from pathlib import Path
 import numpy as np
-from copy import deepcopy
 import pickle
 import torch
 
@@ -162,7 +161,6 @@ class DenoisegPatchDataset(Dataset):
         return output_image, mask
 
 
-
 class DenoisegPatchInMemoryDataset(Dataset):
     def __init__(self, config, is_validation, is_test):
         """
@@ -319,7 +317,6 @@ class DenoisegPatchInMemoryDataset(Dataset):
         return output_image, mask
 
 
-
 class DenoisegPatchDatasetV2(Dataset):
     def __init__(self, config, is_validation, is_test):
         """
@@ -340,32 +337,37 @@ class DenoisegPatchDatasetV2(Dataset):
             self.tomo_names = config.train_tomo_names
 
         # root_path = Path(self.root_dir)
-        self.file_paths = [file for tomo_name in self.tomo_names for file in self.root_dir.joinpath(tomo_name).rglob("*.pkl")]
-    
+        self.file_paths = [
+            file
+            for tomo_name in self.tomo_names
+            for file in self.root_dir.joinpath(tomo_name).rglob("*.pkl")
+        ]
+
         self.mask_ratio = config.mask_ratio
         self.window_size = config.window_size
 
     def __len__(self):
         return len(self.file_paths)
-    
+
     def __getitem__(self, idx):
         file_path = self.file_paths[idx]
-        
-        with open(file_path, 'rb') as f:
+
+        with open(file_path, "rb") as f:
             sample = pickle.load(f)
 
         masked_raw, mask = self.generate_mask(sample["subtomo"])
-        
+
         # print(sample["start_coord"])
         return {
             "image": masked_raw.unsqueeze(0).to(torch.float32),
             "unmasked_image": sample["subtomo"].unsqueeze(0).to(torch.float32),
             "mask": mask.unsqueeze(0).to(torch.uint8),
             "label": sample["label"].unsqueeze(0).to(torch.uint8),
-            "id": sample["tomo_name"] + "/" + "_".join(str(start_coord) for start_coord in sample["start_coord"]),
+            "id": sample["tomo_name"]
+            + "/"
+            + "_".join(str(start_coord) for start_coord in sample["start_coord"]),
             "start_coord": torch.Tensor(sample["start_coord"]).to(torch.int32),
         }
-
 
     def generate_mask(self, input_image):
         """

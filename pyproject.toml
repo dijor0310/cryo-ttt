@@ -1,11 +1,11 @@
 [build-system]
-requires = ["setuptools >= 77.0.3"]
-build-backend = "setuptools.build_meta"
+requires = ["uv_build>=0.9.9,<0.10.0"]
+build-backend = "uv_build"
 
 [project]
 name = "cryo-ttt"
 version = "0.1.0"
-description = "F2FD test-time training for cryo-ET membrane segmentation."
+description = "F2FD-TTT: Test-time training with self-supervised Fourier-to-Fourier denoising for membrane segmentation in cryo-ET tomograms."
 readme = "README.md"
 requires-python = "~=3.10.0"
 license = "MIT"
@@ -26,7 +26,7 @@ dependencies = [
     "nibabel~=5.3.2",
     "pandas~=2.3.0",
     "pillow~=11.0.0",
-    "pip~=25.1.1",
+    "pre-commit>=4.4.0",
     "pytorch-lightning~=2.3.0",
     "scipy~=1.15.3",
     "seaborn~=0.13.2",
@@ -50,5 +50,11 @@ dev = [
 "Homepage" = "https://github.com/dijor0310/cryo-ttt"
 "Bug Tracker" = "https://github.com/dijor0310/cryo-ttt/issues"
 
-[tool.setuptools.packages.find]
-include = ["src*"]
+[tool.uv.build-backend]
+module-name = "ttt"
+namespace = true
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.5",
+]

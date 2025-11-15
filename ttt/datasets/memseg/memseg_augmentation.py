@@ -16,7 +16,7 @@ from monai.transforms import (
     ToTensord,
 )
 
-from datasets.memseg.memseg_transforms import (
+from ttt.datasets.memseg.memseg_transforms import (
     AxesShuffle,
     BlankCuboidTransform,
     BrightnessGradientAdditiveTransform,

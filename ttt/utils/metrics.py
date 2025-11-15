@@ -1,6 +1,7 @@
 import torch
 from torchmetrics import Metric
 
+
 class GlobalDiceMetric(Metric):
     def __init__(self, threshold=0.0, **kwargs):
         super().__init__(**kwargs)
@@ -22,5 +23,7 @@ class GlobalDiceMetric(Metric):
 
     def compute(self) -> torch.Tensor:
         # Compute the Dice score with a smoothing term to avoid division by zero.
-        dice = (2 * self.global_tp) / (2 * self.global_tp + self.global_fp + self.global_fn + 1e-8)
+        dice = (2 * self.global_tp) / (
+            2 * self.global_tp + self.global_fp + self.global_fn + 1e-8
+        )
         return dice

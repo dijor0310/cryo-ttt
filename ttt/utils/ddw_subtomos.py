@@ -84,9 +84,7 @@ def reassemble_subtomos(
             start_idx[0] : end_idx[0],
             start_idx[1] : end_idx[1],
             start_idx[2] : end_idx[2],
-        ] += (
-            subtomo * subtomo_weights
-        )
+        ] += subtomo * subtomo_weights
         count_vol[
             start_idx[0] : end_idx[0],
             start_idx[1] : end_idx[1],

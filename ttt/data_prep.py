@@ -3,9 +3,8 @@
 from torch.utils.data import DataLoader
 import hydra
 from omegaconf import OmegaConf
-from datasets.tomo_dataset import TomoDataset
-from utils.ddw_subtomos import extract_subtomos
-import numpy as np
+from ttt.datasets.tomo_dataset import TomoDataset
+from ttt.utils.ddw_subtomos import extract_subtomos
 import pickle
 import torch
 from pathlib import Path
@@ -13,16 +12,15 @@ from pathlib import Path
 # import os
 from tqdm import tqdm
 
-def crop_to_shape(tensor, shape):
 
+def crop_to_shape(tensor, shape):
     if len(shape) != 3 or tensor.ndim != 3:
         raise ValueError("Should be 3 dimensions!")
-    
-    return tensor[:shape[0], :shape[1], :shape[2]]
+
+    return tensor[: shape[0], : shape[1], : shape[2]]
 
 
 def normalize(tomo):
-
     return (tomo - tomo.mean()) / tomo.std()
 
 
@@ -48,10 +46,9 @@ def data_prep(cfg):
 
         tomo = crop_to_shape(tomo, gt.shape)
 
-
         if cfg.normalize:
             tomo = normalize(tomo)
-            
+
         print(tomo.shape, gt.shape, gt.dtype)
         subtomos, subtomos_start_coord = extract_subtomos(
             tomo=tomo.to(torch.float32),
@@ -66,20 +63,26 @@ def data_prep(cfg):
             pad_before_subtomo_extraction=True,
         )
 
-        assert torch.allclose(torch.Tensor(subtomos_start_coord), torch.Tensor(subtomos_start_coord_sanity)), "Start coordinates should be the same!"
-        
-        for subtomo, subtomo_gt, subtomo_start_coord in zip(subtomos, subtomos_gt, subtomos_start_coord):
+        assert torch.allclose(
+            torch.Tensor(subtomos_start_coord),
+            torch.Tensor(subtomos_start_coord_sanity),
+        ), "Start coordinates should be the same!"
 
+        for subtomo, subtomo_gt, subtomo_start_coord in zip(
+            subtomos, subtomos_gt, subtomos_start_coord
+        ):
             sample = {
                 "subtomo": subtomo.clone().to(torch.float32),
                 "label": subtomo_gt.clone().to(torch.uint8),
                 "tomo_name": tomo_name,
                 "start_coord": subtomo_start_coord,
             }
-            subtomo_name = "_".join(str(start_coord) for start_coord in subtomo_start_coord)
+            subtomo_name = "_".join(
+                str(start_coord) for start_coord in subtomo_start_coord
+            )
 
             Path(f"{cfg.dataset_path}/{tomo_name}").mkdir(exist_ok=True, parents=True)
-        
+
             with open(f"{cfg.dataset_path}/{tomo_name}/{subtomo_name}.pkl", "wb") as f:
                 pickle.dump(sample, f, protocol=5)
     return
